@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/miDev"
+        android:icon="@drawable/ic_menu_myplaces"
+        android:showAsAction="ifRoom"
+        android:title="@string/dev">
+        <menu>
+            <item
+                android:id="@+id/miExtfile"
+                android:showAsAction="never"
+                android:title="@string/extfile"/>
+            <item
+                android:id="@+id/miHudsvc"
+                android:showAsAction="never"
+                android:title="@string/start_hud"/>
+            <item
+                android:id="@+id/miHudsvcoff"
+                android:showAsAction="never"
+                android:title="@string/stop_hud"/>
+            <item
+                android:id="@+id/miOffdev"
+                android:showAsAction="never"
+                android:title="@string/off_dev"/>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/miRefresh"
+        android:icon="@drawable/ic_menu_refresh"
+        android:showAsAction="always"
+        android:title="@string/refresh">
+    </item>
+
+</menu>

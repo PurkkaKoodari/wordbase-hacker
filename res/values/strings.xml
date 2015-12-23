@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Wordbase Hacker</string>
+    <string name="app_name_horst">Wordbase Horster</string>
+    <string name="choose_game">Choose game</string>
+    <string name="loading_games_db">Acquiring database&#8230;</string>
+    <string name="loading_games_tbl">Loading games&#8230;</string>
+    <string name="cant_get_root">Couldn\'t get root.</string>
+    <string name="cant_find_db">Couldn\'t find Wordbase data. Are you sure it\'s installed?</string>
+    <string name="internal_error">An internal error occurred.</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="pending_opponent">(pending opponent)</string>
+    <string name="unknown_opponent">(unknown player)</string>
+    <string name="hack_game">Hack game</string>
+    <string name="gained">Gained</string>
+    <string name="killed">Killed</string>
+    <string name="letters">Letters</string>
+    <string name="tiles">Tiles</string>
+    <string name="progress">Progress</string>
+    <string name="preferwin">Prefer winning moves</string>
+    <string name="defaults">Defaults</string>
+    <string name="scoring">Scoring</string>
+    <string name="play">Play</string>
+    <string name="loading_board">Loading board</string>
+    <string name="loading_moves">Loading moves</string>
+    <string name="applying_moves">Applying moves</string>
+    <string name="analyzing_words">Analyzing words</string>
+    <string name="finding_words">Finding words</string>
+    <string name="scoring_words">Scoring words</string>
+    <string name="no_board_found">No board found. Try opening the game in Wordbase first.</string>
+    <string name="no_moves">No moves found.</string>
+    <string name="best_move">Best word: %1$s (%2$d)</string>
+    <string name="refresh">Refresh</string>
+    <string name="dev">Developer</string>
+    <string name="dev_on">Developer options enabled</string>
+    <string name="dev_off">Developer options disabled</string>
+    <string name="horst_toggle">Horst mode toggled</string>
+    <string name="extfile">External database file</string>
+    <string name="off_dev">Disable developer options</string>
+    <string name="dbfile">Database file:</string>
+    <string name="reset">Reset</string>
+    <string name="start_hud">Start HUD service</string>
+    <string name="stop_hud">Stop HUD service</string>
+
+</resources>

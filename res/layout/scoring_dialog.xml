@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="5dp" >
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <TableRow>
+
+            <Space
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:layout_height="wrap_content"
+                android:gravity="center|top"
+                android:text="@string/gained"
+                android:textAppearance="@android:style/TextAppearance.Holo.Widget.TextView"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_height="wrap_content"
+                android:gravity="center|top"
+                android:text="@string/killed"
+                android:textAppearance="@android:style/TextAppearance.Holo.Widget.TextView"
+                android:textStyle="bold" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/letters"
+                android:textAppearance="@android:style/TextAppearance.Holo.Widget.TextView" />
+
+            <EditText
+                android:id="@+id/lettersBox"
+                android:layout_height="wrap_content"
+                android:ems="4"
+                android:inputType="number" />
+
+            <Space />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/tiles"
+                android:textAppearance="@android:style/TextAppearance.Holo.Widget.TextView" />
+
+            <EditText
+                android:id="@+id/tilesPlrBox"
+                android:layout_height="wrap_content"
+                android:ems="4"
+                android:inputType="number" />
+
+            <EditText
+                android:id="@+id/tilesOppBox"
+                android:layout_height="wrap_content"
+                android:ems="4"
+                android:inputType="number" />
+        </TableRow>
+
+        <TableRow>
+
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/progress"
+                android:textAppearance="@android:style/TextAppearance.Holo.Widget.TextView" />
+
+            <EditText
+                android:id="@+id/progressPlrBox"
+                android:layout_height="wrap_content"
+                android:ems="4"
+                android:inputType="number" />
+
+            <EditText
+                android:id="@+id/progressOppBox"
+                android:layout_height="wrap_content"
+                android:ems="4"
+                android:inputType="number" />
+        </TableRow>
+
+        <TableRow>
+
+            <CheckBox
+                android:id="@+id/winBox"
+                android:layout_height="wrap_content"
+                android:layout_span="3"
+                android:text="@string/preferwin" />
+        </TableRow>
+    </TableLayout>
+
+    <Button
+        android:id="@+id/defaults"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/defaults" />
+
+</LinearLayout>
