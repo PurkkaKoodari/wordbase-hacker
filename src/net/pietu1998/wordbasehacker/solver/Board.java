@@ -41,7 +41,9 @@ public class Board {
 			takeTile(newTiles, pos.getCoordinates()[i].x, pos.getCoordinates()[i].y);
 
 		Set<Coordinate> connected = new HashSet<Coordinate>();
-		addConnected(newTiles, 0, flipped ? 0 : 12, connected, flipped);
+		for (int x = 0; x < 10; x++) {
+			addConnected(newTiles, x, flipped ? 0 : 12, connected, flipped);
+		}
 		for (int x = 0; x < 10; x++) {
 			for (int y = 0; y < 13; y++) {
 				if (newTiles[x][y].isSet(Tile.OPPONENT) && !connected.contains(new Coordinate(x, y)))
