@@ -9,7 +9,9 @@ public class BootReceiver extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		Intent service = new Intent(context, HudService.class);
-		context.startService(service);
+		// TODO Remove condition when HUD working
+		if (BuildConfig.DEBUG)
+			context.startService(service);
 	}
 
 }
