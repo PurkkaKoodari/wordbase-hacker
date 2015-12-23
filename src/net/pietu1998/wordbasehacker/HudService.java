@@ -15,13 +15,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class HudService extends Service {
 
 	private final HudBinder binder = new HudBinder();
 
 	private class HudBinder extends Binder {
+		@SuppressWarnings("unused")
 		HudService getService() {
 			return HudService.this;
 		}
