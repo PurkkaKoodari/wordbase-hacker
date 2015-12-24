@@ -25,6 +25,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
@@ -43,7 +44,8 @@ public class GameListActivity extends ListActivity {
 
 	private ArrayAdapter<Game> adapter;
 	private List<Game> games = new ArrayList<>();
-	private boolean loading = false;;
+	private boolean loading = false;
+	private SwipeRefreshLayout swipe = null;
 
 	@SuppressLint("SdCardPath")
 	public static final String WORDBASE_DB_PATH = "/data/data/com.wordbaseapp/databases/wordbase.db";
@@ -52,6 +54,15 @@ public class GameListActivity extends ListActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_game_list);
+
+		swipe = (SwipeRefreshLayout) findViewById(R.id.list_swipe);
+		swipe.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+			@Override
+			public void onRefresh() {
+				loadData(true);
+			}
+		});
+
 		adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, games);
 		setListAdapter(adapter);
 		getActionBar().setTitle(R.string.choose_game);
@@ -69,7 +80,7 @@ public class GameListActivity extends ListActivity {
 	protected void onStart() {
 		super.onStart();
 		invalidateOptionsMenu();
-		loadData();
+		loadData(false);
 	}
 
 	@Override
@@ -88,12 +99,12 @@ public class GameListActivity extends ListActivity {
 	@SuppressLint("InflateParams")
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.miRefresh:
-			loadData();
-			return true;
 		case R.id.miInfo:
 			try {
 				String version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+				if (BuildConfig.DEBUG) {
+					version += " (debug build)";
+				}
 				String aboutText = getResources().getString(R.string.about_text, version);
 				SpannableString spannable = new SpannableString(aboutText);
 				Linkify.addLinks(spannable, Pattern.compile("https?://[\u0021-\u007e]+"), "http://");
@@ -129,7 +140,7 @@ public class GameListActivity extends ListActivity {
 					if (editText.length() != 0) {
 						getSharedPreferences("WordbaseHacker", 0).edit().putString("db", editText.getText().toString())
 								.commit();
-						loadData();
+						loadData(true);
 					}
 				}
 			});
@@ -137,7 +148,7 @@ public class GameListActivity extends ListActivity {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
 					getSharedPreferences("WordbaseHacker", 0).edit().putString("db", WORDBASE_DB_PATH).commit();
-					loadData();
+					loadData(true);
 				}
 			});
 			dialog.show();
@@ -155,14 +166,19 @@ public class GameListActivity extends ListActivity {
 		}
 	}
 
-	private void loadData() {
+	private void loadData(boolean background) {
 		if (loading)
 			return;
 		loading = true;
-		ProgressDialog dialog = new ProgressDialog(this);
-		dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		dialog.setCancelable(false);
-		dialog.show();
+		ProgressDialog dialog = null;
+		if (background) {
+			swipe.setRefreshing(true);
+		} else {
+			dialog = new ProgressDialog(this);
+			dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			dialog.setCancelable(false);
+			dialog.show();
+		}
 		AcquireDatabaseTask task = new AcquireDatabaseTask(getSharedPreferences("WordbaseHacker", 0).getString("db",
 				WORDBASE_DB_PATH), dialog);
 		task.execute();
@@ -262,12 +278,17 @@ public class GameListActivity extends ListActivity {
 
 		@Override
 		protected void onProgressUpdate(Integer... values) {
-			dialog.setMessage(getResources().getString(values[0]));
+			if (dialog != null) {
+				dialog.setMessage(getResources().getString(values[0]));
+			}
 		}
 
 		@Override
 		protected void onPostExecute(Integer result) {
-			dialog.dismiss();
+			if (dialog != null) {
+				dialog.dismiss();
+			}
+			swipe.setRefreshing(false);
 			if (result != 0) {
 				new AlertDialog.Builder(GameListActivity.this).setMessage(result)
 						.setNeutralButton(R.string.ok, new DialogInterface.OnClickListener() {
