@@ -31,5 +31,11 @@
         android:showAsAction="always"
         android:title="@string/refresh">
     </item>
+    <item
+        android:id="@+id/miInfo"
+        android:icon="@drawable/ic_menu_info_details"
+        android:showAsAction="always"
+        android:title="@string/about">
+    </item>
 
 </menu>

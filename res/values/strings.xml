@@ -33,6 +33,9 @@
     <string name="no_moves">No moves found.</string>
     <string name="best_move">Best word: %1$s (%2$d)</string>
     <string name="refresh">Refresh</string>
+    <string name="about">About</string>
+    <string name="about_title">About Wordbase Hacker</string>
+    <string name="about_text">Wordbase Hacker\nversion %1$s\n\nCopyright &#169; Pietu1998 2015\nLicensed under the MIT license.\nYou can find the source code at https://bitbucket.org/Pietu1998/wordbase-hacker&#8204;.</string>
     <string name="dev">Developer</string>
     <string name="dev_on">Developer options enabled</string>
     <string name="dev_off">Developer options disabled</string>

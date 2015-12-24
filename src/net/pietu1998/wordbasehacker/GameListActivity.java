@@ -9,6 +9,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import net.pietu1998.wordbasehacker.solver.Game;
 import android.annotation.SuppressLint;
@@ -17,12 +18,16 @@ import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,6 +36,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class GameListActivity extends ListActivity {
@@ -79,10 +85,29 @@ public class GameListActivity extends ListActivity {
 	}
 
 	@Override
+	@SuppressLint("InflateParams")
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.miRefresh:
 			loadData();
+			return true;
+		case R.id.miInfo:
+			try {
+				String version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+				String aboutText = getResources().getString(R.string.about_text, version);
+				SpannableString spannable = new SpannableString(aboutText);
+				Linkify.addLinks(spannable, Pattern.compile("https?://[\u0021-\u007e]+"), "http://");
+				TextView view = new TextView(this);
+				view.setTextAppearance(this, android.R.style.TextAppearance_Holo_Small);
+				view.setPadding(5, 5, 5, 5);
+				view.setText(spannable);
+				view.setMovementMethod(LinkMovementMethod.getInstance());
+				new AlertDialog.Builder(this).setView(view).setNeutralButton(R.string.ok, null)
+						.setTitle(R.string.about_title).show();
+			} catch (NameNotFoundException e) {
+				Log.e("WordbaseHacker", "Couldn't get version.", e);
+				Toast.makeText(this, R.string.internal_error, Toast.LENGTH_SHORT).show();
+			}
 			return true;
 		case R.id.miOffdev:
 			getSharedPreferences("WordbaseHacker", 0).edit().putBoolean("dev", false).commit();
