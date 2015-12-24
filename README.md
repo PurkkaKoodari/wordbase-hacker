@@ -11,7 +11,7 @@ the optimal word in a situation based on some calculation.
 Wordbase Hacker requires root access to get the app's data from its secure
 folder.
 
-Wordbase Hacker is licensed under the [MIT license](src/master/LICENSE).
+Wordbase Hacker is licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
 ### Implemented features
 
