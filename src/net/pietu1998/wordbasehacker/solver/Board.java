@@ -90,7 +90,14 @@ public class Board {
 	private static void takeTile(Tile[][] tiles, int x, int y) {
 		if (x < 0 || x > 9 || y < 0 || y > 12)
 			return;
-		if (tiles[x][y].isSet(Tile.MINE)) {
+		if (tiles[x][y].isSet(Tile.MINE | Tile.SUPER_MINE)) {
+			if (tiles[x][y].isSet(Tile.SUPER_MINE)) {
+				tiles[x][y] = tiles[x][y].modify(0, Tile.SUPER_MINE);
+				takeTile(tiles, x - 1, y - 1);
+				takeTile(tiles, x - 1, y + 1);
+				takeTile(tiles, x + 1, y - 1);
+				takeTile(tiles, x + 1, y + 1);
+			}
 			tiles[x][y] = tiles[x][y].modify(0, Tile.MINE);
 			takeTile(tiles, x, y - 1);
 			takeTile(tiles, x - 1, y);

@@ -143,6 +143,8 @@ public class BoardActivity extends Activity {
 							flags |= Tile.BASE;
 						if ("Mine".equals(tile.get(0)))
 							flags |= Tile.MINE;
+						if ("SuperMine".equals(tile.get(0)))
+							flags |= Tile.SUPER_MINE;
 						if ("player".equals(tile.get(3)))
 							flags |= Tile.PLAYER;
 						if ("opponent".equals(tile.get(3)))

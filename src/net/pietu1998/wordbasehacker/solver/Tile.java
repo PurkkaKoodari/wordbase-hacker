@@ -6,6 +6,7 @@ public class Tile {
 	public static final int OPPONENT = 2;
 	public static final int MINE = 4;
 	public static final int BASE = 8;
+	public static final int SUPER_MINE = 16;
 
 	private int flags;
 	private char letter;

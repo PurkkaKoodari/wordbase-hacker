@@ -41,11 +41,13 @@ public class BoardDrawable extends Drawable {
 		whiteBg.setStyle(Paint.Style.FILL);
 		whiteBg.setColor(0xFFFFFFFF);
 		Paint orangeBg = new Paint(whiteBg);
-		orangeBg.setColor(0xFFFF6600);
+		orangeBg.setColor(0xFFFE8800);
 		Paint blueBg = new Paint(whiteBg);
-		blueBg.setColor(0xFF66FFFF);
+		blueBg.setColor(0xFF00C9E8);
 		Paint blackBg = new Paint(whiteBg);
 		blackBg.setColor(0xFF000000);
+		Paint purpleBg = new Paint(whiteBg);
+		purpleBg.setColor(0xFF9239B2);
 
 		Paint blackText = new Paint(whiteBg);
 		blackText.setTypeface(Typeface.defaultFromStyle(Typeface.BOLD));
@@ -63,7 +65,9 @@ public class BoardDrawable extends Drawable {
 		for (int x = 0; x < 10; x++) {
 			for (int y = 0; y < 13; y++) {
 				Tile t = pos.getResult().getTiles()[x][y];
-				if (t.isSet(Tile.MINE))
+				if (t.isSet(Tile.SUPER_MINE))
+					canvas.drawRect(x * 80, y * 80, x * 80 + 80, y * 80 + 80, purpleBg);
+				else if (t.isSet(Tile.MINE))
 					canvas.drawRect(x * 80, y * 80, x * 80 + 80, y * 80 + 80, blackBg);
 				else if (t.isSet(Tile.PLAYER))
 					canvas.drawRect(x * 80, y * 80, x * 80 + 80, y * 80 + 80, flipped ? blueBg : orangeBg);
@@ -73,7 +77,8 @@ public class BoardDrawable extends Drawable {
 					canvas.drawRect(x * 80, y * 80, x * 80 + 80, y * 80 + 80, whiteBg);
 				canvas.drawText(String.valueOf(t.getLetter()),
 						x * 80 + 40 - blackText.measureText(String.valueOf(t.getLetter())) / 2,
-						y * 80 + 40 - blackText.ascent() / 2, t.isSet(Tile.MINE) ? whiteText : blackText);
+						y * 80 + 40 - blackText.ascent() / 2,
+						t.isSet(Tile.MINE | Tile.SUPER_MINE) ? whiteText : blackText);
 			}
 		}
 		if (pos.getCoordinates().length > 1) {
