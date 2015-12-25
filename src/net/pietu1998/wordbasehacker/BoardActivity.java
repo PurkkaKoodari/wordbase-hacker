@@ -298,20 +298,22 @@ public class BoardActivity extends Activity {
 		try {
 			DataInputStream is = new DataInputStream(openFileInput("scoring.dat"));
 			int letter = is.readInt();
+			int mine = is.readInt();
 			int tileGain = is.readInt();
 			int tileKill = is.readInt();
 			int progressGain = is.readInt();
 			int progressKill = is.readInt();
 			boolean winBonus = is.readBoolean();
 			is.close();
-			scoring = new Scoring(letter, tileGain, tileKill, progressGain, progressKill, winBonus);
+			scoring = new Scoring(letter, mine, tileGain, tileKill, progressGain, progressKill, winBonus);
 		} catch (FileNotFoundException e) {
 			scoring = Scoring.DEFAULT;
 			Log.i("WordbaseHacker", "No previous scoring found, defaulting");
 			saveScoring();
 		} catch (IOException e) {
 			scoring = Scoring.DEFAULT;
-			Log.e("WordbaseHacker", "Failed to load scoring", e);
+			Log.e("WordbaseHacker", "Failed to load scoring, defaulting", e);
+			saveScoring();
 		}
 	}
 
@@ -319,6 +321,7 @@ public class BoardActivity extends Activity {
 		try {
 			DataOutputStream os = new DataOutputStream(openFileOutput("scoring.dat", 0));
 			os.writeInt(scoring.letter);
+			os.writeInt(scoring.mine);
 			os.writeInt(scoring.tileGain);
 			os.writeInt(scoring.tileKill);
 			os.writeInt(scoring.progressGain);
@@ -344,9 +347,9 @@ public class BoardActivity extends Activity {
 				scoring = currentScoring;
 				saveScoring();
 				updateView();
-				if (scoring.equals(new Scoring(7, 3, 3, 5, 6, false)))
+				if (scoring.equals(new Scoring(7, 0, 3, 3, 5, 6, false)))
 					enableDev();
-				if (scoring.equals(new Scoring(4, 6, 7, 7, 8, false)))
+				if (scoring.equals(new Scoring(4, 0, 6, 7, 7, 8, false)))
 					toggleHorst();
 			}
 		});
@@ -367,6 +370,7 @@ public class BoardActivity extends Activity {
 			public void afterTextChanged(Editable s) {}
 		};
 		((EditText) layout.findViewById(R.id.lettersBox)).addTextChangedListener(watcher);
+		((EditText) layout.findViewById(R.id.minesBox)).addTextChangedListener(watcher);
 		((EditText) layout.findViewById(R.id.tilesPlrBox)).addTextChangedListener(watcher);
 		((EditText) layout.findViewById(R.id.tilesOppBox)).addTextChangedListener(watcher);
 		((EditText) layout.findViewById(R.id.progressPlrBox)).addTextChangedListener(watcher);
@@ -395,6 +399,7 @@ public class BoardActivity extends Activity {
 
 	private void updateFields(View layout) {
 		((EditText) layout.findViewById(R.id.lettersBox)).setText(Integer.toString(currentScoring.letter));
+		((EditText) layout.findViewById(R.id.minesBox)).setText(Integer.toString(currentScoring.mine));
 		((EditText) layout.findViewById(R.id.tilesPlrBox)).setText(Integer.toString(currentScoring.tileGain));
 		((EditText) layout.findViewById(R.id.tilesOppBox)).setText(Integer.toString(currentScoring.tileKill));
 		((EditText) layout.findViewById(R.id.progressPlrBox)).setText(Integer.toString(currentScoring.progressGain));
@@ -407,6 +412,7 @@ public class BoardActivity extends Activity {
 			return;
 		try {
 			int letter = Integer.parseInt(((EditText) layout.findViewById(R.id.lettersBox)).getText().toString());
+			int mine = Integer.parseInt(((EditText) layout.findViewById(R.id.minesBox)).getText().toString());
 			int tileGain = Integer.parseInt(((EditText) layout.findViewById(R.id.tilesPlrBox)).getText().toString());
 			int tileKill = Integer.parseInt(((EditText) layout.findViewById(R.id.tilesOppBox)).getText().toString());
 			int progressGain = Integer.parseInt(((EditText) layout.findViewById(R.id.progressPlrBox)).getText()
@@ -414,7 +420,7 @@ public class BoardActivity extends Activity {
 			int progressKill = Integer.parseInt(((EditText) layout.findViewById(R.id.progressOppBox)).getText()
 					.toString());
 			boolean winBonus = ((CheckBox) layout.findViewById(R.id.winBox)).isChecked();
-			currentScoring = new Scoring(letter, tileGain, tileKill, progressGain, progressKill, winBonus);
+			currentScoring = new Scoring(letter, mine, tileGain, tileKill, progressGain, progressKill, winBonus);
 			shown.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
 		} catch (NumberFormatException e) {
 			shown.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);

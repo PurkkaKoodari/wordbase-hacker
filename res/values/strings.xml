@@ -17,6 +17,7 @@
     <string name="gained">Gained</string>
     <string name="killed">Killed</string>
     <string name="letters">Letters</string>
+    <string name="mines">Mines</string>
     <string name="tiles">Tiles</string>
     <string name="progress">Progress</string>
     <string name="preferwin">Prefer winning moves</string>

@@ -23,7 +23,7 @@ public class Board {
 
 	public void score(Possibility pos, boolean flipped) {
 		Tile[][] newTiles = new Tile[10][13];
-		int oldPlayer = 0, oldOpponent = 0, oldDistP = 0, oldDistO = 0;
+		int oldMines = 0, oldPlayer = 0, oldOpponent = 0, oldDistP = 0, oldDistO = 0;
 		for (int x = 0; x < 10; x++) {
 			for (int y = 0; y < 13; y++) {
 				newTiles[x][y] = tiles[x][y];
@@ -33,6 +33,8 @@ public class Board {
 				} else if (newTiles[x][y].isSet(Tile.OPPONENT)) {
 					oldOpponent++;
 					oldDistO = max(oldDistO, flipped ? y : 12 - y);
+				} else if (newTiles[x][y].isSet(Tile.MINE | Tile.SUPER_MINE)) {
+					oldMines++;
 				}
 			}
 		}
@@ -51,7 +53,7 @@ public class Board {
 			}
 		}
 
-		int newPlayer = 0, newOpponent = 0, newDistP = 0, newDistO = 0;
+		int newMines = 0, newPlayer = 0, newOpponent = 0, newDistP = 0, newDistO = 0;
 		for (int x = 0; x < 10; x++) {
 			for (int y = 0; y < 13; y++) {
 				if (newTiles[x][y].isSet(Tile.PLAYER)) {
@@ -60,11 +62,13 @@ public class Board {
 				} else if (newTiles[x][y].isSet(Tile.OPPONENT)) {
 					newOpponent++;
 					newDistO = max(newDistO, flipped ? y : 12 - y);
+				} else if (newTiles[x][y].isSet(Tile.MINE | Tile.SUPER_MINE)) {
+					newMines++;
 				}
 			}
 		}
-		pos.setScore(new Score(pos.getCoordinates().length, newPlayer - oldPlayer, oldOpponent - newOpponent, newDistP
-				- oldDistP, oldDistO - newDistO, newDistP == 12));
+		pos.setScore(new Score(pos.getCoordinates().length, oldMines - newMines, newPlayer - oldPlayer, oldOpponent
+				- newOpponent, newDistP - oldDistP, oldDistO - newDistO, newDistP == 12));
 		pos.setResult(new Board(newTiles, words));
 	}
 
