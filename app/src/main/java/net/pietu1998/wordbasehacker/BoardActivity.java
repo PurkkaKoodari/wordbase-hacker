@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import net.pietu1998.wordbasehacker.solver.Board;
-import net.pietu1998.wordbasehacker.solver.Coordinate;
 import net.pietu1998.wordbasehacker.solver.Game;
 import net.pietu1998.wordbasehacker.solver.Move;
 import net.pietu1998.wordbasehacker.solver.Possibility;
@@ -100,6 +99,12 @@ public class BoardActivity extends Activity {
 			this.dialog = dialog;
 		}
 
+		private class TrieNode {
+			private TrieNode[] nodes = new TrieNode[1024];
+			private boolean hasChildren = false;
+			private String content = null;
+		}
+
 		@Override
 		protected Integer doInBackground(Void... params) {
 			try {
@@ -152,10 +157,20 @@ public class BoardActivity extends Activity {
 						layout[Integer.parseInt((String) tile.get(1))][Integer.parseInt((String) tile.get(2))] = flags;
 					}
 				}
+
+				short charMap[] = new short[65536];
+				short charIndex = 0;
+
 				Tile[][] tiles = new Tile[10][13];
+				short[] tileMap = new short[130];
 				for (int x = 0; x < 10; x++) {
 					for (int y = 0; y < 13; y++) {
-						tiles[x][y] = new Tile(layout[x][y], rows[y].charAt(x));
+						char letter = rows[y].charAt(x);
+						int mapping = charMap[letter];
+						if (mapping == 0)
+							mapping = charMap[letter] = (short) ++charIndex;
+						tiles[x][y] = new Tile(layout[x][y], letter);
+						tileMap[x + 10 * y] = (short) (mapping - 1);
 					}
 				}
 				game.setBoard(new Board(tiles, words));
@@ -163,36 +178,40 @@ public class BoardActivity extends Activity {
 				publishProgress(R.string.analyzing_words);
 				words = game.getBoard().getWords();
 				int longest = 0;
-				for (int i = 0; i < words.length; i++) {
-					if (words[i].length() > longest)
-						longest = words[i].length();
-				}
-				List<List<String>> byLength = new ArrayList<>();
-				for (int i = 0; i < longest; i++)
-					byLength.add(new ArrayList<String>());
-				for (int i = 0; i < words.length; i++) {
-					for (int j = 0; j < words[i].length(); j++)
-						byLength.get(j).add(words[i]);
-				}
-				String[][] wordsByLength = new String[longest][];
-				for (int i = 0; i < longest; i++) {
-					wordsByLength[i] = byLength.get(i).toArray(new String[0]);
-					Arrays.sort(wordsByLength[i]);
+				TrieNode root = new TrieNode();
+				for (String word : words) {
+					if (game.isPlayed(word))
+						continue;
+					if (word.length() > longest)
+						longest = word.length();
+					TrieNode node = root;
+					for (int i = 0; i < word.length(); i++) {
+						int mapping = charMap[word.charAt(i)] - 1;
+						node.hasChildren = true;
+						TrieNode next = node.nodes[mapping];
+						if (next == null)
+							node = node.nodes[mapping] = new TrieNode();
+						else
+							node = next;
+					}
+					node.content = word;
 				}
 
 				publishProgress(R.string.finding_words);
 				results = new ArrayList<>();
 				long start = System.currentTimeMillis();
-				for (int iteration = 0; iteration < 20; iteration++) {
+				for (int iteration = 0; iteration < 100; iteration++) {
+					boolean positions[] = new boolean[130];
+					byte coords[] = new byte[2 * longest];
+					short letters[] = new short[longest];
 					for (int x = 0; x < 10; x++) {
 						for (int y = 0; y < 13; y++) {
 							if (game.getBoard().getTiles()[x][y].isSet(Tile.PLAYER)) {
-								findWords(game, 0, longest, x, y, new ArrayList<Coordinate>(), new char[longest], results,
-										wordsByLength);
+								findWords(tileMap, 0, longest, x, y, coords, positions, letters, root);
 							}
 						}
 					}
-					if (iteration < 19) results.clear();
+					if (iteration < 99) results.clear();
 				}
 				long end = System.currentTimeMillis();
 				Log.d("WordbaseHacker", "Finding took " + (end - start) + "ms");
@@ -220,28 +239,31 @@ public class BoardActivity extends Activity {
 			}
 		}
 
-		private void findWords(Game game, int length, int max, int x, int y, List<Coordinate> coords, char[] letters, List<Possibility> results, String[][] wordsByLength) {
-			if (length >= max || x < 0 || x > 9 || y < 0 || y > 12 || coords.contains(new Coordinate(x, y)))
+		private void findWords(short[] tiles, int length, int max, int x, int y, byte[] coords, boolean[] positions, short[] letters, TrieNode node) {
+			int index = y * 10 + x;
+			if (length >= max || x < 0 || x > 9 || y < 0 || y > 12 || positions[index])
 				return;
-			List<Coordinate> withCoords = new ArrayList<>(coords);
-			withCoords.add(new Coordinate(x, y));
-			char[] withLetter = Arrays.copyOf(letters, max);
-			withLetter[length] = game.getBoard().getTiles()[x][y].getLetter();
-			String word = new String(withLetter, 0, length + 1);
-			int pos = findPos(wordsByLength[length], word);
-			if (pos >= wordsByLength[length].length || !wordsByLength[length][pos].startsWith(word))
+			short letter = tiles[index];
+			node = node.nodes[letter];
+			if (node == null)
 				return;
-			if (Arrays.asList(wordsByLength[length]).contains(word) && !game.isPlayed(word))
-				results.add(new Possibility(withCoords.toArray(new Coordinate[0]), Arrays
-						.copyOf(withLetter, length + 1)));
-			findWords(game, length + 1, max, x, y + 1, withCoords, withLetter, results, wordsByLength);
-			findWords(game, length + 1, max, x - 1, y + 1, withCoords, withLetter, results, wordsByLength);
-			findWords(game, length + 1, max, x + 1, y + 1, withCoords, withLetter, results, wordsByLength);
-			findWords(game, length + 1, max, x - 1, y, withCoords, withLetter, results, wordsByLength);
-			findWords(game, length + 1, max, x + 1, y, withCoords, withLetter, results, wordsByLength);
-			findWords(game, length + 1, max, x, y - 1, withCoords, withLetter, results, wordsByLength);
-			findWords(game, length + 1, max, x - 1, y - 1, withCoords, withLetter, results, wordsByLength);
-			findWords(game, length + 1, max, x + 1, y - 1, withCoords, withLetter, results, wordsByLength);
+			coords[length * 2] = (byte) x;
+			coords[length * 2 + 1] = (byte) y;
+			letters[length] = letter;
+			if (node.content != null)
+				results.add(new Possibility(Arrays.copyOf(coords, length * 2 + 2), node.content));
+			if (!node.hasChildren)
+				return;
+			positions[index] = true;
+			findWords(tiles, length + 1, max, x, y + 1, coords, positions, letters, node);
+			findWords(tiles, length + 1, max, x - 1, y + 1, coords, positions, letters, node);
+			findWords(tiles, length + 1, max, x + 1, y + 1, coords, positions, letters, node);
+			findWords(tiles, length + 1, max, x - 1, y, coords, positions, letters, node);
+			findWords(tiles, length + 1, max, x + 1, y, coords, positions, letters, node);
+			findWords(tiles, length + 1, max, x, y - 1, coords, positions, letters, node);
+			findWords(tiles, length + 1, max, x - 1, y - 1, coords, positions, letters, node);
+			findWords(tiles, length + 1, max, x + 1, y - 1, coords, positions, letters, node);
+			positions[index] = false;
 		}
 
 		private int findPos(String[] items, String item) {
@@ -286,10 +308,6 @@ public class BoardActivity extends Activity {
 	}
 
 	private void updateView() {
-		if (possibilities.size() == 0) {
-			((TextView) findViewById(R.id.status)).setText(R.string.no_moves);
-			return;
-		}
 		int max = Integer.MIN_VALUE;
 		Possibility best = null;
 		for (Possibility pos : possibilities) {
@@ -299,9 +317,12 @@ public class BoardActivity extends Activity {
 				best = pos;
 			}
 		}
+		if (best == null) {
+			((TextView) findViewById(R.id.status)).setText(R.string.no_moves);
+			return;
+		}
 		((ImageView) findViewById(R.id.movePicture)).setImageDrawable(new BoardDrawable(best, game.isFlipped()));
-		((TextView) findViewById(R.id.status)).setText(getResources().getString(R.string.best_move,
-				new String(best.getWord()), max));
+		((TextView) findViewById(R.id.status)).setText(getResources().getString(R.string.best_move, best.getWord(), max));
 	}
 
 	private void loadScoring() {

@@ -19,7 +19,6 @@ public class Tile {
 	public int getFlags() {
 		return flags;
 	}
-
 	public char getLetter() {
 		return letter;
 	}

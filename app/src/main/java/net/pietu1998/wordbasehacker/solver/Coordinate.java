@@ -3,17 +3,17 @@ package net.pietu1998.wordbasehacker.solver;
 public class Coordinate {
 
 	public final int x, y;
-	private final int hash;
+	private final int index;
 
 	public Coordinate(int x, int y) {
 		this.x = x;
 		this.y = y;
-		this.hash = (x << 8) | y;
+		this.index = y + 10 * x;
 	}
 
 	@Override
 	public int hashCode() {
-		return hash;
+		return index;
 	}
 
 	@Override

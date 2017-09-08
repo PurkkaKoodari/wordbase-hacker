@@ -81,20 +81,20 @@ public class BoardDrawable extends Drawable {
 						t.isSet(Tile.MINE | Tile.SUPER_MINE) ? whiteText : blackText);
 			}
 		}
-		if (pos.getCoordinates().length > 1) {
-			Coordinate[] c = pos.getCoordinates();
-			canvas.drawCircle(80 * c[0].x + 40, 80 * c[0].y + 40, 32, path);
-			if (c[0].x != c[1].x && c[0].y != c[1].y)
-				canvas.drawLine(c[0].x * 80 + (c[1].x - c[0].x) * SQRT512 + 40, c[0].y * 80 + (c[1].y - c[0].y)
-						* SQRT512 + 40, c[1].x * 80 + 40, c[1].y * 80 + 40, path);
-			else if (c[0].x == c[1].x)
-				canvas.drawLine(80 * c[0].x + 40, 48 * c[0].y + 32 * c[1].y + 40, 80 * c[1].x + 40, 80 * c[1].y + 40,
+		if (pos.getCoordinates().length > 2) {
+			byte[] c = pos.getCoordinates();
+			canvas.drawCircle(80 * c[0] + 40, 80 * c[1] + 40, 32, path);
+			if (c[0] != c[2] && c[1] != c[3])
+				canvas.drawLine(c[0] * 80 + (c[2] - c[0]) * SQRT512 + 40, c[1] * 80 + (c[3] - c[1])
+						* SQRT512 + 40, c[2] * 80 + 40, c[3] * 80 + 40, path);
+			else if (c[0] == c[2])
+				canvas.drawLine(80 * c[0] + 40, 48 * c[1] + 32 * c[3] + 40, 80 * c[2] + 40, 80 * c[3] + 40,
 						path);
 			else
-				canvas.drawLine(48 * c[0].x + 32 * c[1].x + 40, 80 * c[0].y + 40, 80 * c[1].x + 40, 80 * c[1].y + 40,
+				canvas.drawLine(48 * c[0] + 32 * c[2] + 40, 80 * c[1] + 40, 80 * c[2] + 40, 80 * c[3] + 40,
 						path);
-			for (int i = 1; i < c.length - 1; i++) {
-				canvas.drawLine(80 * c[i].x + 40, 80 * c[i].y + 40, 80 * c[i + 1].x + 40, 80 * c[i + 1].y + 40, path);
+			for (int i = 2; i < c.length - 2; i += 2) {
+				canvas.drawLine(80 * c[i] + 40, 80 * c[i + 1] + 40, 80 * c[i + 2] + 40, 80 * c[i + 3] + 40, path);
 			}
 		}
 	}

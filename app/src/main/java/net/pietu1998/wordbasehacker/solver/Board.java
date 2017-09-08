@@ -39,8 +39,9 @@ public class Board {
 			}
 		}
 
-		for (int i = 0; i < pos.getCoordinates().length; i++)
-			takeTile(newTiles, pos.getCoordinates()[i].x, pos.getCoordinates()[i].y);
+		byte[] coords = pos.getCoordinates();
+		for (int i = 0; i < coords.length; i += 2)
+			takeTile(newTiles, coords[i], coords[i + 1]);
 
 		Set<Coordinate> connected = new HashSet<Coordinate>();
 		for (int x = 0; x < 10; x++) {
@@ -67,7 +68,7 @@ public class Board {
 				}
 			}
 		}
-		pos.setScore(new Score(pos.getCoordinates().length, oldMines - newMines, newPlayer - oldPlayer, oldOpponent
+		pos.setScore(new Score(pos.getCoordinates().length / 2, oldMines - newMines, newPlayer - oldPlayer, oldOpponent
 				- newOpponent, newDistP - oldDistP, oldDistO - newDistO, newDistP == 12));
 		pos.setResult(new Board(newTiles, words));
 	}
