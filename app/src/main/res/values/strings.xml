@@ -4,6 +4,7 @@
     <string name="app_name">Wordbase Hacker</string>
     <string name="app_name_horst">Wordbase Horster</string>
     <string name="choose_game">Choose game</string>
+    <string name="checking_permission">Checking permissions&#8230;</string>
     <string name="loading_games_db">Acquiring database&#8230;</string>
     <string name="loading_games_tbl">Loading games&#8230;</string>
     <string name="cant_get_root">Couldn\'t get root.</string>

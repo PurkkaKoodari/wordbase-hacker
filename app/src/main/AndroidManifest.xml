@@ -5,8 +5,8 @@
     android:versionName="alpha 0.2" >
 
     <uses-sdk
-        android:minSdkVersion="14"
-        android:targetSdkVersion="22" />
+        android:minSdkVersion="21"
+        android:targetSdkVersion="26" />
 
     <uses-permission android:name="android.permission.ACCESS_SUPERUSER" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />

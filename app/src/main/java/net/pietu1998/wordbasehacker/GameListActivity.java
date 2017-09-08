@@ -1,30 +1,23 @@
 package net.pietu1998.wordbasehacker;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.regex.Pattern;
-
-import net.pietu1998.wordbasehacker.solver.Game;
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
@@ -40,12 +33,34 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import net.pietu1998.wordbasehacker.solver.Game;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
+
 public class GameListActivity extends ListActivity {
 
 	private ArrayAdapter<Game> adapter;
 	private List<Game> games = new ArrayList<>();
 	private boolean loading = false;
 	private SwipeRefreshLayout swipe = null;
+
+	private Lock permissionLock = new ReentrantLock();
+	private Condition permissionCond = permissionLock.newCondition();
 
 	@SuppressLint("SdCardPath")
 	public static final String WORDBASE_DB_PATH = "/data/data/com.wordbaseapp/databases/wordbase.db";
@@ -177,11 +192,27 @@ public class GameListActivity extends ListActivity {
 			dialog = new ProgressDialog(this);
 			dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 			dialog.setCancelable(false);
+			dialog.setMessage(getResources().getString(R.string.checking_permission));
 			dialog.show();
 		}
 		AcquireDatabaseTask task = new AcquireDatabaseTask(getSharedPreferences("WordbaseHacker", 0).getString("db",
 				WORDBASE_DB_PATH), dialog);
 		task.execute();
+	}
+
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+		if (requestCode != 1)
+			return;
+		for (int i = 0; i < permissions.length; i++) {
+			if (permissions[i].equals(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+				if (grantResults[i] != PackageManager.PERMISSION_GRANTED)
+					finish();
+				permissionLock.lock();
+				permissionCond.signalAll();
+				permissionLock.unlock();
+			}
+		}
 	}
 
 	private class AcquireDatabaseTask extends AsyncTask<Void, Integer, Integer> {
@@ -198,28 +229,44 @@ public class GameListActivity extends ListActivity {
 		@Override
 		protected Integer doInBackground(Void... params) {
 			try {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+					if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+						ActivityCompat.requestPermissions(GameListActivity.this, new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+						permissionLock.lock();
+						permissionCond.await();
+						permissionLock.unlock();
+						if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+							return -1;
+					}
+				}
 				publishProgress(R.string.loading_games_db);
+				Process whoami = new ProcessBuilder("whoami").start();
+				String username;
+				try (BufferedReader buf = new BufferedReader(new InputStreamReader(whoami.getInputStream()))) {
+					username = buf.readLine();
+					if (username == null)
+						throw new IllegalStateException("no output from whoami");
+				}
+				File cacheDb = new File(getCacheDir(), "wordbase.db");
 				ProcessBuilder pb = new ProcessBuilder("su");
 				pb.redirectErrorStream(true);
 				Process root = pb.start();
-				Writer cmd = new OutputStreamWriter(root.getOutputStream());
-				BufferedReader res = new BufferedReader(new InputStreamReader(root.getInputStream()));
-				File cacheDb = new File(getCacheDir(), "wordbase.db");
-				cmd.write("cp \"" + inputDb + "\" \"" + cacheDb.getPath() + "\" && chmod 0777 \"" + cacheDb.getPath()
-						+ "\" && echo hacked\n");
-				cmd.flush();
-				String out = res.readLine();
-				if (out == null) {
-					cmd.close();
-					res.close();
-					return R.string.cant_get_root;
-				}
-				if (out != null && out.toLowerCase(Locale.getDefault()).contains("no such")) {
-					cmd.write("exit\n");
-					cmd.flush();
-					cmd.close();
-					res.close();
-					return R.string.cant_find_db;
+				try (Writer cmd = new OutputStreamWriter(root.getOutputStream())) {
+					try (BufferedReader res = new BufferedReader(new InputStreamReader(root.getInputStream()))) {
+						cmd.write("cp \"" + inputDb + "\" \"" + cacheDb.getPath() + "\" && " +
+								"chown " + username + ":" + username + " \"" + cacheDb.getPath() + "\" && " +
+								"restorecon -F " + cacheDb.getPath() + " && " +
+								"echo hacked\n");
+						cmd.flush();
+						String out = res.readLine();
+						cmd.write("exit\n");
+						cmd.flush();
+						root.waitFor();
+						if (out == null)
+							return R.string.cant_get_root;
+						if (out.toLowerCase(Locale.getDefault()).contains("no such"))
+							return R.string.cant_find_db;
+					}
 				}
 
 				publishProgress(R.string.loading_games_tbl);
@@ -246,18 +293,17 @@ public class GameListActivity extends ListActivity {
 							game.setOpponent(opponentCursor.getString(0));
 						else
 							game.setOpponent(getResources().getString(R.string.unknown_opponent));
+						opponentCursor.close();
 					}
 					results.add(game);
 				}
+				gameCursor.close();
 
 				db.close();
-
-				cmd.write("exit\n");
-				cmd.flush();
-				cmd.close();
-				res.close();
-				root.waitFor();
 				return 0;
+			} catch (FileNotFoundException e) {
+				Log.e("WordbaseHacker", "Failed to read data.", e);
+				return R.string.cant_find_db;
 			} catch (IOException e) {
 				Log.e("WordbaseHacker", "Failed to read data.", e);
 				return R.string.cant_get_root;
@@ -267,10 +313,7 @@ public class GameListActivity extends ListActivity {
 			} catch (InterruptedException e) {
 				Log.e("WordbaseHacker", "Failed to read data.", e);
 				return R.string.cant_get_root;
-			} catch (SQLiteCantOpenDatabaseException e) {
-				Log.e("WordbaseHacker", "Failed to read data.", e);
-				return R.string.cant_find_db;
-			} catch (SQLiteException e) {
+			} catch (SQLiteException | IllegalStateException e) {
 				Log.e("WordbaseHacker", "Failed to read data.", e);
 				return R.string.internal_error;
 			}
@@ -289,6 +332,8 @@ public class GameListActivity extends ListActivity {
 				dialog.dismiss();
 			}
 			swipe.setRefreshing(false);
+			if (result == -1)
+				return;
 			if (result != 0) {
 				new AlertDialog.Builder(GameListActivity.this).setMessage(result)
 						.setNeutralButton(R.string.ok, new DialogInterface.OnClickListener() {
