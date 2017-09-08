@@ -182,18 +182,28 @@ public class BoardActivity extends Activity {
 
 				publishProgress(R.string.finding_words);
 				results = new ArrayList<>();
-				for (int x = 0; x < 10; x++) {
-					for (int y = 0; y < 13; y++) {
-						if ((game.getBoard().getTiles()[x][y].getFlags() & Tile.PLAYER) != 0) {
-							findWords(game, 0, longest, x, y, new ArrayList<Coordinate>(), new char[longest], results,
-									wordsByLength);
+				long start = System.currentTimeMillis();
+				for (int iteration = 0; iteration < 20; iteration++) {
+					for (int x = 0; x < 10; x++) {
+						for (int y = 0; y < 13; y++) {
+							if (game.getBoard().getTiles()[x][y].isSet(Tile.PLAYER)) {
+								findWords(game, 0, longest, x, y, new ArrayList<Coordinate>(), new char[longest], results,
+										wordsByLength);
+							}
 						}
 					}
+					if (iteration < 19) results.clear();
 				}
+				long end = System.currentTimeMillis();
+				Log.d("WordbaseHacker", "Finding took " + (end - start) + "ms");
 
 				publishProgress(R.string.scoring_words);
-				for (Possibility pos : results)
-					game.getBoard().score(pos, game.isFlipped());
+				start = System.currentTimeMillis();
+				for (int iteration = 0; iteration < 20; iteration++)
+					for (Possibility pos : results)
+						game.getBoard().score(pos, game.isFlipped());
+				end = System.currentTimeMillis();
+				Log.d("WordbaseHacker", "Scoring took " + (end - start) + "ms");
 				return 0;
 			} catch (NumberFormatException e) {
 				Log.e("WordbaseHacker", "Failed to read data.", e);
