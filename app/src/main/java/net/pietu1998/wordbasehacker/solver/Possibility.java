@@ -9,7 +9,7 @@ public class Possibility {
 	@NonNull
 	private String word;
 	private Score score;
-	private int[] result;
+	private int[] result = new int[130];
 	private char[] tileLetters;
 
 	public Possibility(@NonNull byte[] coordinates, @NonNull String word) {
@@ -30,7 +30,7 @@ public class Possibility {
 	}
 
 	public void setResult(int[] result) {
-		this.result = result;
+		System.arraycopy(result, 0, this.result, 0, 130);
 	}
 
 	public char[] getTileLetters() {

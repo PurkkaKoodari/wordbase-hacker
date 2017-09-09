@@ -65,18 +65,12 @@ public class Board {
 	}
 
 	public void findWords() {
-		long start = System.currentTimeMillis();
-		for (int iteration = 0; iteration < 500; iteration++) {
-			boolean positions[] = new boolean[130];
-			byte coords[] = new byte[24];
-			for (int y = 0, index = 0; y < 13; y++)
-				for (int x = 0; x < 10; x++, index++)
-					if ((tileStates[index] & Tile.PLAYER) != 0)
-						findWordsRecursive(tileMappedLetters, 0, x, y, index, coords, positions, root, results);
-			if (iteration < 499) results.clear();
-		}
-		long end = System.currentTimeMillis();
-		Log.d("WordbaseHacker", "Finding took " + (end - start) + "ms");
+		boolean positions[] = new boolean[130];
+		byte coords[] = new byte[24];
+		for (int y = 0, index = 0; y < 13; y++)
+			for (int x = 0; x < 10; x++, index++)
+				if ((tileStates[index] & Tile.PLAYER) != 0)
+					findWordsRecursive(tileMappedLetters, 0, x, y, index, coords, positions, root, results);
 	}
 
 	private void findWordsRecursive(short[] tiles, int length, int x, int y, int index, byte[] coords, boolean[] positions, TrieNode node, List<Possibility> results) {
@@ -105,21 +99,19 @@ public class Board {
 	}
 
 	public void scoreWords(boolean flipped) {
-		long start = System.currentTimeMillis();
-		for (int iteration = 0; iteration < 100; iteration++)
-			for (Possibility pos : results) {
-				scoreWord(pos, flipped);
-				pos.setTileLetters(tileLetters);
-			}
-		long end = System.currentTimeMillis();
-		Log.d("WordbaseHacker", "Scoring took " + (end - start) + "ms");
+		int[] newStates = new int[130];
+		boolean[] connected = new boolean[130];
+		for (Possibility pos : results) {
+			scoreWord(pos, newStates, connected, flipped);
+			pos.setTileLetters(tileLetters);
+		}
 	}
 
-	private void scoreWord(Possibility pos, boolean flipped) {
-		int[] newStates = new int[130];
+	private void scoreWord(Possibility pos, int[] newStates, boolean[] connected, boolean flipped) {
 		int oldMines = 0, oldPlayer = 0, oldOpponent = 0, oldDistPlayer = 0, oldDistOpponent = 0;
 		for (int y = 0, index = 0; y < 13; y++) {
 			for (int x = 0; x < 10; x++, index++) {
+				connected[index] = false;
 				int state = newStates[index] = tileStates[index];
 				if ((state & Tile.PLAYER) != 0) {
 					oldPlayer++;
@@ -140,7 +132,6 @@ public class Board {
 			takeTile(newStates, x, y, x + 10 * y);
 		}
 
-		boolean[] connected = new boolean[130];
 		int baseY = flipped ? 0 : 12;
 		int offset = 10 * baseY;
 		for (int x = 0; x < 10; x++)
