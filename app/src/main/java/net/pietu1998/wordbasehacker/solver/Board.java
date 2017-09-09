@@ -168,6 +168,7 @@ public class Board {
 			return;
 		int state = tiles[index];
 		if (state != (state &= ~Tile.SUPER_MINE)) {
+			tiles[index] = (state & ~(Tile.OPPONENT | Tile.SUPER_MINE)) | Tile.PLAYER;
 			takeTile(tiles, x - 1, y - 1, index - 11);
 			takeTile(tiles, x + 1, y - 1, index - 9);
 			takeTile(tiles, x - 1, y + 1, index + 9);
@@ -177,12 +178,14 @@ public class Board {
 			takeTile(tiles, x + 1, y, index + 1);
 			takeTile(tiles, x, y + 1, index + 10);
 		} else if (state != (state &= ~Tile.MINE)) {
+			tiles[index] = (state & ~(Tile.OPPONENT | Tile.MINE)) | Tile.PLAYER;
 			takeTile(tiles, x, y - 1, index - 10);
 			takeTile(tiles, x - 1, y, index - 1);
 			takeTile(tiles, x + 1, y, index + 1);
 			takeTile(tiles, x, y + 1, index + 10);
+		} else {
+			tiles[index] = (state & ~Tile.OPPONENT) | Tile.PLAYER;
 		}
-		tiles[index] = (state & ~Tile.OPPONENT) | Tile.PLAYER;
 	}
 
 	private void addConnected(int[] tiles, int x, int y, int index, boolean[] positions) {
