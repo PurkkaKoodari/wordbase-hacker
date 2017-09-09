@@ -9,7 +9,8 @@ public class Possibility {
 	@NonNull
 	private String word;
 	private Score score;
-	private Board result;
+	private int[] result;
+	private char[] tileLetters;
 
 	public Possibility(@NonNull byte[] coordinates, @NonNull String word) {
 		this.coordinates = coordinates;
@@ -24,13 +25,20 @@ public class Possibility {
 		this.score = score;
 	}
 
-	@NonNull
-	public Board getResult() {
+	public int[] getResult() {
 		return result;
 	}
 
-	public void setResult(Board result) {
+	public void setResult(int[] result) {
 		this.result = result;
+	}
+
+	public char[] getTileLetters() {
+		return tileLetters;
+	}
+
+	public void setTileLetters(char[] tileLetters) {
+		this.tileLetters = tileLetters;
 	}
 
 	@NonNull

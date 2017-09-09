@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 
 public class BoardDrawable extends Drawable {
 
@@ -33,7 +34,7 @@ public class BoardDrawable extends Drawable {
 	}
 
 	@Override
-	public void draw(Canvas canvas) {
+	public void draw(@NonNull Canvas canvas) {
 		if (pos.getResult() == null)
 			return;
 
@@ -62,23 +63,25 @@ public class BoardDrawable extends Drawable {
 		path.setStrokeCap(Paint.Cap.ROUND);
 		path.setColor(0xFF009900);
 
-		for (int x = 0; x < 10; x++) {
-			for (int y = 0; y < 13; y++) {
-				Tile t = pos.getResult().getTiles()[x][y];
-				if (t.isSet(Tile.SUPER_MINE))
+		char[] tileLetters = pos.getTileLetters();
+		int[] tileStates = pos.getResult();
+		for (int y = 0, index = 0; y < 13; y++) {
+			for (int x = 0; x < 10; x++, index++) {
+				int t = tileStates[index];
+				if ((t & Tile.SUPER_MINE) != 0)
 					canvas.drawRect(x * 80, y * 80, x * 80 + 80, y * 80 + 80, purpleBg);
-				else if (t.isSet(Tile.MINE))
+				else if ((t & Tile.MINE) != 0)
 					canvas.drawRect(x * 80, y * 80, x * 80 + 80, y * 80 + 80, blackBg);
-				else if (t.isSet(Tile.PLAYER))
+				else if ((t & Tile.PLAYER) != 0)
 					canvas.drawRect(x * 80, y * 80, x * 80 + 80, y * 80 + 80, flipped ? blueBg : orangeBg);
-				else if (t.isSet(Tile.OPPONENT))
+				else if ((t & Tile.OPPONENT) != 0)
 					canvas.drawRect(x * 80, y * 80, x * 80 + 80, y * 80 + 80, flipped ? orangeBg : blueBg);
 				else
 					canvas.drawRect(x * 80, y * 80, x * 80 + 80, y * 80 + 80, whiteBg);
-				canvas.drawText(String.valueOf(t.getLetter()),
-						x * 80 + 40 - blackText.measureText(String.valueOf(t.getLetter())) / 2,
+				canvas.drawText(String.valueOf(tileLetters[index]),
+						x * 80 + 40 - blackText.measureText(String.valueOf(tileLetters[index])) / 2,
 						y * 80 + 40 - blackText.ascent() / 2,
-						t.isSet(Tile.MINE | Tile.SUPER_MINE) ? whiteText : blackText);
+						(t & (Tile.MINE | Tile.SUPER_MINE)) != 0 ? whiteText : blackText);
 			}
 		}
 		if (pos.getCoordinates().length > 2) {

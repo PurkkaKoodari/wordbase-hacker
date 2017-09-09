@@ -10,7 +10,6 @@ public class Game implements Parcelable {
 
 	private int id, boardId, opponentId;
 	private String layout, opponent = null;
-	private Board board = null;
 	private Set<String> played;
 	private boolean flipped;
 
@@ -29,14 +28,6 @@ public class Game implements Parcelable {
 
 	public void setOpponent(String opponent) {
 		this.opponent = opponent;
-	}
-
-	public Board getBoard() {
-		return board;
-	}
-
-	public void setBoard(Board board) {
-		this.board = board;
 	}
 
 	public int getId() {

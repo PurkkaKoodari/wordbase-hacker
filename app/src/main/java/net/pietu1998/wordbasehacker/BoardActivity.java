@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import net.pietu1998.wordbasehacker.solver.Board;
@@ -98,12 +97,6 @@ public class BoardActivity extends Activity {
 			this.dialog = dialog;
 		}
 
-		private class TrieNode {
-			private TrieNode[] nodes = new TrieNode[1024];
-			private boolean hasChildren = false;
-			private String content = null;
-		}
-
 		@Override
 		protected Integer doInBackground(Void... params) {
 			try {
@@ -161,94 +154,21 @@ public class BoardActivity extends Activity {
 					}
 				}
 
-				short charMap[] = new short[65536];
-				short charIndex = 0;
-
-				Tile[][] tiles = new Tile[10][13];
-				short[] tileLetters = new short[130];
-				for (int x = 0; x < 10; x++) {
-					for (int y = 0; y < 13; y++) {
-						char letter = rows[y].charAt(x);
-						int mapping = charMap[letter];
-						if (mapping == 0)
-							mapping = charMap[letter] = (short) ++charIndex;
-						tiles[x][y] = new Tile(tileStates[x + 10 * y], letter);
-						tileLetters[x + 10 * y] = (short) (mapping - 1);
-					}
-				}
-				game.setBoard(new Board(tiles, words));
-
 				publishProgress(R.string.analyzing_words);
-				words = game.getBoard().getWords();
-				TrieNode root = new TrieNode();
-				for (String word : words) {
-					if (game.isPlayed(word))
-						continue;
-					TrieNode node = root;
-					for (int i = 0; i < word.length(); i++) {
-						int mapping = charMap[word.charAt(i)] - 1;
-						node.hasChildren = true;
-						TrieNode next = node.nodes[mapping];
-						if (next == null)
-							node = node.nodes[mapping] = new TrieNode();
-						else
-							node = next;
-					}
-					node.content = word;
-				}
+				Board board = new Board(rows, tileStates, words, game);
 
 				publishProgress(R.string.finding_words);
-				results = new ArrayList<>();
-				long start = System.currentTimeMillis();
-				for (int iteration = 0; iteration < 500; iteration++) {
-					boolean positions[] = new boolean[130];
-					byte coords[] = new byte[24];
-					for (int y = 0, index = 0; y < 13; y++)
-						for (int x = 0; x < 10; x++, index++)
-							if ((tileStates[index] & Tile.PLAYER) != 0)
-								findWords(tileLetters, 0, x, y, index, coords, positions, root);
-					if (iteration < 499) results.clear();
-				}
-				long end = System.currentTimeMillis();
-				Log.d("WordbaseHacker", "Finding took " + (end - start) + "ms");
+				board.findWords();
 
 				publishProgress(R.string.scoring_words);
-				start = System.currentTimeMillis();
-				for (int iteration = 0; iteration < 20; iteration++)
-					for (Possibility pos : results)
-						game.getBoard().score(pos, game.isFlipped());
-				end = System.currentTimeMillis();
-				Log.d("WordbaseHacker", "Scoring took " + (end - start) + "ms");
+				board.scoreWords(game.isFlipped());
+
+				results = board.getResults();
 				return 0;
 			} catch (NumberFormatException | ParseException  | SQLiteException | IndexOutOfBoundsException e) {
 				Log.e("WordbaseHacker", "Failed to read data.", e);
 				return R.string.internal_error;
 			}
-		}
-
-		private void findWords(short[] tiles, int length, int x, int y, int index, byte[] coords, boolean[] positions, TrieNode node) {
-			if (length >= 12 || x < 0 || x > 9 || y < 0 || y > 12 || positions[index])
-				return;
-			short letter = tiles[index];
-			node = node.nodes[letter];
-			if (node == null)
-				return;
-			coords[length * 2] = (byte) x;
-			coords[length * 2 + 1] = (byte) y;
-			if (node.content != null)
-				results.add(new Possibility(Arrays.copyOf(coords, length * 2 + 2), node.content));
-			if (!node.hasChildren)
-				return;
-			positions[index] = true;
-			findWords(tiles, length + 1, x, y + 1, index + 10, coords, positions, node);
-			findWords(tiles, length + 1, x - 1, y + 1, index + 9, coords, positions, node);
-			findWords(tiles, length + 1, x + 1, y + 1, index + 11, coords, positions, node);
-			findWords(tiles, length + 1, x - 1, y, index - 1, coords, positions, node);
-			findWords(tiles, length + 1, x + 1, y, index + 1, coords, positions, node);
-			findWords(tiles, length + 1, x, y - 1, index - 10, coords, positions, node);
-			findWords(tiles, length + 1, x - 1, y - 1, index - 11, coords, positions, node);
-			findWords(tiles, length + 1, x + 1, y - 1, index - 9, coords, positions, node);
-			positions[index] = false;
 		}
 
 		@Override
