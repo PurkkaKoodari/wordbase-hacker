@@ -19,14 +19,14 @@
                 android:layout_height="wrap_content"
                 android:gravity="center|top"
                 android:text="@string/gained"
-                android:textAppearance="@android:style/TextAppearance.Holo.Widget.TextView"
+                android:textAppearance="@android:style/TextAppearance.Material.Widget.TextView"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_height="wrap_content"
                 android:gravity="center|top"
                 android:text="@string/killed"
-                android:textAppearance="@android:style/TextAppearance.Holo.Widget.TextView"
+                android:textAppearance="@android:style/TextAppearance.Material.Widget.TextView"
                 android:textStyle="bold" />
         </TableRow>
 
@@ -36,7 +36,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/letters"
-                android:textAppearance="@android:style/TextAppearance.Holo.Widget.TextView" />
+                android:textAppearance="@android:style/TextAppearance.Material.Widget.TextView" />
 
             <EditText
                 android:id="@+id/lettersBox"
@@ -53,7 +53,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/mines"
-                android:textAppearance="@android:style/TextAppearance.Holo.Widget.TextView" />
+                android:textAppearance="@android:style/TextAppearance.Material.Widget.TextView" />
 
             <EditText
                 android:id="@+id/minesBox"
@@ -70,7 +70,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/tiles"
-                android:textAppearance="@android:style/TextAppearance.Holo.Widget.TextView" />
+                android:textAppearance="@android:style/TextAppearance.Material.Widget.TextView" />
 
             <EditText
                 android:id="@+id/tilesPlrBox"
@@ -91,7 +91,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/progress"
-                android:textAppearance="@android:style/TextAppearance.Holo.Widget.TextView" />
+                android:textAppearance="@android:style/TextAppearance.Material.Widget.TextView" />
 
             <EditText
                 android:id="@+id/progressPlrBox"

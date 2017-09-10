@@ -1,35 +1,32 @@
 package net.pietu1998.wordbasehacker.solver;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class Board {
 
-	private short[] charMap = new short[65536];
-	private short charIndex = 0;
+	private short numCharacters = 0;
 
-	private int[] tileStates;
-	private char[] tileLetters;
-	private short[] tileMappedLetters;
+	private final int[] tileStates;
+	private final char[] tileLetters;
+	private final short[] tileMappedLetters;
 
-	private TrieNode root;
+	private final TrieNode root;
 
-	private List<Possibility> results = new ArrayList<>();
+	private final List<Possibility> results = new ArrayList<>();
 
 	public List<Possibility> getResults() {
 		return results;
 	}
 
 	private class TrieNode {
-		private TrieNode[] nodes;
+		private final TrieNode[] nodes;
 		private boolean hasChildren = false;
 		private String content = null;
 
 		TrieNode() {
-			nodes = new TrieNode[charIndex];
+			nodes = new TrieNode[numCharacters];
 		}
 	}
 
@@ -37,12 +34,13 @@ public class Board {
 		this.tileStates = tileStates;
 		tileLetters = new char[130];
 		tileMappedLetters = new short[130];
+		short[] charMap = new short[65536];
 		for (int y = 0, index = 0; y < 13; y++) {
 			for (int x = 0; x < 10; x++, index++) {
 				char letter = tileLetters[index] = rows[y].charAt(x);
 				int mapping = charMap[letter];
 				if (mapping == 0)
-					mapping = charMap[letter] = ++charIndex;
+					mapping = charMap[letter] = ++numCharacters;
 				tileMappedLetters[index] = (short) (mapping - 1);
 			}
 		}
@@ -62,6 +60,10 @@ public class Board {
 			}
 			node.content = word;
 		}
+	}
+
+	public char[] getTileLetters() {
+		return tileLetters;
 	}
 
 	public void findWords() {
@@ -101,10 +103,8 @@ public class Board {
 	public void scoreWords(boolean flipped) {
 		int[] newStates = new int[130];
 		boolean[] connected = new boolean[130];
-		for (Possibility pos : results) {
+		for (Possibility pos : results)
 			scoreWord(pos, newStates, connected, flipped);
-			pos.setTileLetters(tileLetters);
-		}
 	}
 
 	private void scoreWord(Possibility pos, int[] newStates, boolean[] connected, boolean flipped) {

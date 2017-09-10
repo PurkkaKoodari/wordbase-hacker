@@ -5,12 +5,11 @@ import android.support.annotation.NonNull;
 public class Possibility {
 
 	@NonNull
-	private byte[] coordinates;
+	private final byte[] coordinates;
 	@NonNull
-	private String word;
+	private final String word;
+	private final int[] result = new int[130];
 	private Score score;
-	private int[] result = new int[130];
-	private char[] tileLetters;
 
 	public Possibility(@NonNull byte[] coordinates, @NonNull String word) {
 		this.coordinates = coordinates;
@@ -31,14 +30,6 @@ public class Possibility {
 
 	public void setResult(int[] result) {
 		System.arraycopy(result, 0, this.result, 0, 130);
-	}
-
-	public char[] getTileLetters() {
-		return tileLetters;
-	}
-
-	public void setTileLetters(char[] tileLetters) {
-		this.tileLetters = tileLetters;
 	}
 
 	@NonNull

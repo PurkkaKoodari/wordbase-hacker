@@ -1,35 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      tools:context=".GameListActivity">
 
     <item
-        android:id="@+id/miDev"
-        android:icon="@drawable/ic_menu_myplaces"
-        android:showAsAction="ifRoom"
-        android:title="@string/dev">
-        <menu>
-            <item
-                android:id="@+id/miExtfile"
-                android:showAsAction="never"
-                android:title="@string/extfile"/>
-            <item
-                android:id="@+id/miHudsvc"
-                android:showAsAction="never"
-                android:title="@string/start_hud"/>
-            <item
-                android:id="@+id/miHudsvcoff"
-                android:showAsAction="never"
-                android:title="@string/stop_hud"/>
-            <item
-                android:id="@+id/miOffdev"
-                android:showAsAction="never"
-                android:title="@string/off_dev"/>
-        </menu>
-    </item>
-    <item
-        android:id="@+id/miInfo"
-        android:icon="@drawable/ic_menu_info_details"
-        android:showAsAction="always"
-        android:title="@string/about">
-    </item>
+        android:id="@+id/action_settings"
+        android:title="@string/title_activity_settings"
+        android:icon="@android:drawable/ic_menu_preferences"
+        app:showAsAction="always"/>
 
 </menu>

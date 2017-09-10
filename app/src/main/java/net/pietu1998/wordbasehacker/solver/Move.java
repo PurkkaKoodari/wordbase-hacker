@@ -2,7 +2,7 @@ package net.pietu1998.wordbasehacker.solver;
 
 public class Move {
 
-	private String layout, word;
+	private final String layout, word;
 
 	public Move(String layout, String word) {
 		this.layout = layout;

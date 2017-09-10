@@ -8,10 +8,11 @@ import android.os.Parcelable;
 
 public class Game implements Parcelable {
 
-	private int id, boardId, opponentId;
-	private String layout, opponent = null;
-	private Set<String> played;
-	private boolean flipped;
+	private final int id, boardId, opponentId;
+	private final String layout;
+	private String opponent = null;
+	private final Set<String> played;
+	private final boolean flipped;
 
 	public Game(int id, int boardId, int opponentId, String layout, boolean flipped) {
 		this.id = id;

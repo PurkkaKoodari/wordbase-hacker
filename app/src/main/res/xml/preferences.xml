@@ -1,0 +1,51 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory
+        android:title="@string/pref_category_hud">
+
+        <SwitchPreference
+            android:key="@string/pref_key_hud"
+            android:title="@string/pref_hud"
+            android:summary="@string/pref_desc_hud"
+            android:defaultValue="true"/>
+
+        <SwitchPreference
+            android:key="@string/pref_key_hudauto"
+            android:title="@string/pref_hudauto"
+            android:summary="@string/pref_desc_hudauto"
+            android:defaultValue="true"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_category_about">
+
+        <Preference
+            android:key="@string/pref_key_version"
+            android:title="@string/pref_version"/>
+
+        <Preference
+            android:key="@string/pref_key_license"
+            android:title="@string/pref_license"
+            android:summary="@string/pref_desc_license"/>
+
+        <Preference
+            android:key="@string/pref_key_source"
+            android:title="@string/pref_source"
+            android:summary="@string/bitbucket_url"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_dev">
+
+        <EditTextPreference
+            android:key="@string/pref_key_dbpath"
+            android:title="@string/pref_dbpath"
+            android:summary="@string/pref_desc_dbpath"
+            android:maxLines="1"
+            android:singleLine="true"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

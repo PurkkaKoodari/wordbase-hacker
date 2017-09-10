@@ -6,12 +6,14 @@ import android.content.Intent;
 
 public class BootReceiver extends BroadcastReceiver {
 
-	@Override
-	public void onReceive(Context context, Intent intent) {
-		Intent service = new Intent(context, HudService.class);
-		// TODO Remove condition when HUD working
-		if (BuildConfig.DEBUG)
-			context.startService(service);
-	}
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        if (!intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED))
+            return;
+        if (HudUtils.isHudAutoEnabled(context)) {
+            Intent service = new Intent(context, HudService.class);
+            context.startService(service);
+        }
+    }
 
 }

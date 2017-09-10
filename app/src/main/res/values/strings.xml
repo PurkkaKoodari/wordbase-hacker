@@ -2,11 +2,10 @@
 <resources>
 
     <string name="app_name">Wordbase Hacker</string>
-    <string name="app_name_horst">Wordbase Horster</string>
-    <string name="choose_game">Choose game</string>
-    <string name="checking_permission">Checking permissions&#8230;</string>
-    <string name="loading_games_db">Acquiring database&#8230;</string>
-    <string name="loading_games_tbl">Loading games&#8230;</string>
+    <string name="title_activity_game_list">Choose game</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_board">Game with %s</string>
+
     <string name="cant_get_root">Couldn\'t get root.</string>
     <string name="cant_find_db">Couldn\'t find Wordbase data. Are you sure it\'s installed?</string>
     <string name="internal_error">An internal error occurred.</string>
@@ -34,19 +33,37 @@
     <string name="no_board_found">No board found. Try opening the game in Wordbase first.</string>
     <string name="no_moves">No moves found.</string>
     <string name="best_move">Best word: %1$s (%2$d)</string>
-    <string name="refresh">Refresh</string>
-    <string name="about">About</string>
-    <string name="about_title">About Wordbase Hacker</string>
-    <string name="about_text">Wordbase Hacker\nversion %1$s\n\nCopyright &#169; Pietu1998 2015\nLicensed under the MIT license.\nYou can find the source code at https://bitbucket.org/Pietu1998/wordbase-hacker&#8204;.</string>
-    <string name="dev">Developer</string>
-    <string name="dev_on">Developer options enabled</string>
-    <string name="dev_off">Developer options disabled</string>
-    <string name="horst_toggle">Horst mode toggled</string>
-    <string name="extfile">External database file</string>
-    <string name="off_dev">Disable developer options</string>
-    <string name="dbfile">Database file:</string>
-    <string name="reset">Reset</string>
-    <string name="start_hud">Start HUD service</string>
-    <string name="stop_hud">Stop HUD service</string>
+    <string name="debug_version">%1$s (debug version)</string>
+    <string name="bitbucket_url">https://bitbucket.org/Pietu1998/wordbase-hacker</string>
+    <string name="board_description">Game board</string>
+    <string name="no_games">No games waiting for your move</string>
+    <string name="allow_draw_on_top_title">Permission required</string>
+    <string name="allow_draw_on_top">In order to assist you in playing the best word, Wordbase Hacker must be allowed to draw on top of Wordbase. Press OK to open settings or Cancel to disable the feature.</string>
+    <string name="allow_draw_on_top_settings">In order to assist you in playing the best word, Wordbase Hacker must be allowed to draw on top of Wordbase. Press OK to open settings.</string>
+    <string name="data_not_changed">The database has not changed. Open Wordbase to update it.</string>
+    <string name="open">Open</string>
+
+    <!-- Preference keys -->
+    <string name="pref_key_hud">hud</string>
+    <string name="pref_key_hudauto">hudauto</string>
+    <string name="pref_key_dbpath">dbpath</string>
+    <string name="pref_key_version">version</string>
+    <string name="pref_key_license">license</string>
+    <string name="pref_key_source">source</string>
+
+    <!-- Preference UI strings -->
+    <string name="pref_category_hud">HUD</string>
+    <string name="pref_category_about">About</string>
+    <string name="pref_hud">Enable HUD</string>
+    <string name="pref_desc_hud">Enables a HUD that displays the recommended word on top of the Wordbase app.</string>
+    <string name="pref_hudauto">Automatic HUD visibility</string>
+    <string name="pref_desc_hudauto">Automatically show/hide the HUD when Wordbase is opened. Uncheck if the HUD does not appear or to save battery.</string>
+    <string name="pref_version">Version</string>
+    <string name="pref_license">License</string>
+    <string name="pref_desc_license">Copyright &#169; Pietu1998 2015&#8211;2017\nLicensed under the MIT license.</string>
+    <string name="pref_source">Source code</string>
+    <string name="pref_dev">Developer options</string>
+    <string name="pref_dbpath">Custom database location</string>
+    <string name="pref_desc_dbpath">Choose an alternate path for Wordbase\'s database.</string>
 
 </resources>

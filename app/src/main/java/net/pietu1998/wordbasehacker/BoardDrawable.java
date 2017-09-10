@@ -1,6 +1,5 @@
 package net.pietu1998.wordbasehacker;
 
-import net.pietu1998.wordbasehacker.solver.Coordinate;
 import net.pietu1998.wordbasehacker.solver.Possibility;
 import net.pietu1998.wordbasehacker.solver.Tile;
 import android.graphics.Canvas;
@@ -13,13 +12,15 @@ import android.support.annotation.NonNull;
 
 public class BoardDrawable extends Drawable {
 
-	private Possibility pos;
-	private boolean flipped;
+	private final Possibility pos;
+	private final char[] tileLetters;
+	private final boolean flipped;
 
 	private final static float SQRT512 = (float) (16 * Math.sqrt(2));
 
-	public BoardDrawable(Possibility pos, boolean flipped) {
+	public BoardDrawable(Possibility pos, char[] tileLetters, boolean flipped) {
 		this.pos = pos;
+		this.tileLetters = tileLetters;
 		this.flipped = flipped;
 	}
 
@@ -63,7 +64,6 @@ public class BoardDrawable extends Drawable {
 		path.setStrokeCap(Paint.Cap.ROUND);
 		path.setColor(0xFF009900);
 
-		char[] tileLetters = pos.getTileLetters();
 		int[] tileStates = pos.getResult();
 		for (int y = 0, index = 0; y < 13; y++) {
 			for (int x = 0; x < 10; x++, index++) {

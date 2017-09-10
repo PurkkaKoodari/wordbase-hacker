@@ -19,22 +19,23 @@ import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -44,12 +45,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class BoardActivity extends Activity {
+public class BoardActivity extends AppCompatActivity {
 
 	private Scoring currentScoring, scoring = Scoring.DEFAULT;
 	private boolean changingValues = false;
 	private Game game;
 	private List<Possibility> possibilities = new ArrayList<>();
+	private char[] tileLetters = null;
 	private boolean loaded = false;
 
 	@Override
@@ -57,20 +59,35 @@ public class BoardActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_board);
 		loadScoring();
-		Button scoring = (Button) findViewById(R.id.scoringBtn);
+		Button scoring = (Button) findViewById(R.id.scoring_btn);
 		scoring.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				scoringDialog();
 			}
 		});
+		Button play = (Button) findViewById(R.id.play_btn);
+		play.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				Intent intent = new Intent();
+				intent.setComponent(new ComponentName("com.wordbaseapp", "com.wordbaseapp.BoardActivity"));
+				intent.putExtra("game_id", (long) game.getId());
+				startActivity(intent);
+			}
+		});
 		Parcelable extra = getIntent().getParcelableExtra("game");
-		if (extra == null) {
+		if (!(extra instanceof Game)) {
 			Toast.makeText(this, R.string.internal_error, Toast.LENGTH_SHORT).show();
 			finish();
 			return;
 		}
 		game = (Game) extra;
+		ActionBar actionBar = getSupportActionBar();
+		if (actionBar != null) {
+			actionBar.setTitle(getResources().getString(R.string.title_activity_board, game.getOpponent()));
+			actionBar.setDisplayHomeAsUpEnabled(true);
+		}
 		loaded = false;
 	}
 
@@ -88,10 +105,18 @@ public class BoardActivity extends Activity {
 		task.execute();
 	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if (item.getItemId() == android.R.id.home) {
+			finish();
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
 	private class LoadTask extends AsyncTask<Void, Integer, Integer> {
 
-		private ProgressDialog dialog;
-		private List<Possibility> results;
+		private final ProgressDialog dialog;
 
 		public LoadTask(ProgressDialog dialog) {
 			this.dialog = dialog;
@@ -163,7 +188,8 @@ public class BoardActivity extends Activity {
 				publishProgress(R.string.scoring_words);
 				board.scoreWords(game.isFlipped());
 
-				results = board.getResults();
+				tileLetters = board.getTileLetters();
+				possibilities = board.getResults();
 				return 0;
 			} catch (NumberFormatException | ParseException  | SQLiteException | IndexOutOfBoundsException e) {
 				Log.e("WordbaseHacker", "Failed to read data.", e);
@@ -188,7 +214,6 @@ public class BoardActivity extends Activity {
 							}
 						}).show();
 			} else {
-				possibilities = results;
 				updateView();
 			}
 		}
@@ -209,7 +234,7 @@ public class BoardActivity extends Activity {
 			((TextView) findViewById(R.id.status)).setText(R.string.no_moves);
 			return;
 		}
-		((ImageView) findViewById(R.id.movePicture)).setImageDrawable(new BoardDrawable(best, game.isFlipped()));
+		((ImageView) findViewById(R.id.move_picture)).setImageDrawable(new BoardDrawable(best, tileLetters, game.isFlipped()));
 		((TextView) findViewById(R.id.status)).setText(getResources().getString(R.string.best_move, best.getWord(), max));
 	}
 
@@ -266,10 +291,6 @@ public class BoardActivity extends Activity {
 				scoring = currentScoring;
 				saveScoring();
 				updateView();
-				if (scoring.equals(new Scoring(7, 0, 3, 3, 5, 6, false)))
-					enableDev();
-				if (scoring.equals(new Scoring(4, 0, 6, 7, 7, 8, false)))
-					toggleHorst();
 			}
 		});
 		final AlertDialog shown = dialog.create();
@@ -302,7 +323,7 @@ public class BoardActivity extends Activity {
 					}
 				});
 
-		Button defaults = (Button) layout.findViewById(R.id.defaults);
+		Button defaults = layout.findViewById(R.id.defaults);
 		defaults.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -344,28 +365,6 @@ public class BoardActivity extends Activity {
 		} catch (NumberFormatException e) {
 			shown.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
 		}
-	}
-
-	private void enableDev() {
-		getSharedPreferences("WordbaseHacker", 0).edit().putBoolean("dev", true).commit();
-		Toast.makeText(this, R.string.dev_on, Toast.LENGTH_SHORT).show();
-	}
-
-	private void toggleHorst() {
-		SharedPreferences pref = getSharedPreferences("WordbaseHacker", 0);
-		boolean horst = !pref.getBoolean("horst", false);
-		pref.edit().putBoolean("horst", horst).commit();
-		getPackageManager()
-				.setComponentEnabledSetting(
-						new ComponentName(this, "net.pietu1998.wordbasehacker.GameListActivityHorst"),
-						horst ? PackageManager.COMPONENT_ENABLED_STATE_ENABLED : PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-						PackageManager.DONT_KILL_APP);
-		getPackageManager()
-				.setComponentEnabledSetting(
-						new ComponentName(this, "net.pietu1998.wordbasehacker.GameListActivityNormal"),
-						horst ? PackageManager.COMPONENT_ENABLED_STATE_DISABLED : PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
-						PackageManager.DONT_KILL_APP);
-		Toast.makeText(this, R.string.horst_toggle, Toast.LENGTH_SHORT).show();
 	}
 
 }
