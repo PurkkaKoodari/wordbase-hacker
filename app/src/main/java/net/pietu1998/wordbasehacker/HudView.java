@@ -107,7 +107,6 @@ public class HudView extends View {
     @Override
     public void draw(Canvas canvas) {
         super.draw(canvas);
-        Log.d("WordbaseHacker", "Drawing view, resize: " + editMode);
         if (editMode) {
             canvas.save();
             canvas.translate(x, y);

@@ -36,13 +36,14 @@
     <string name="debug_version">%1$s (debug version)</string>
     <string name="bitbucket_url">https://bitbucket.org/Pietu1998/wordbase-hacker</string>
     <string name="board_description">Game board</string>
-    <string name="no_games">No games waiting for your move</string>
+    <string name="no_games">No games are waiting for your move.</string>
     <string name="allow_draw_on_top_title">Permission required</string>
     <string name="allow_draw_on_top">In order to assist you in playing the best word, Wordbase Hacker must be allowed to draw on top of Wordbase. Press OK to open settings or Cancel to disable the feature.</string>
     <string name="allow_draw_on_top_settings">In order to assist you in playing the best word, Wordbase Hacker must be allowed to draw on top of Wordbase. Press OK to open settings.</string>
     <string name="data_not_changed">The database has not changed. Open Wordbase to update it.</string>
     <string name="open">Open</string>
     <string name="hud_close_info">Press back to return and close HUD.</string>
+    <string name="hud_edit_info">Press the tick to save, then press back to return.</string>
 
     <!-- Preference keys -->
     <string name="pref_key_hud"><xliff:g>hud</xliff:g></string>

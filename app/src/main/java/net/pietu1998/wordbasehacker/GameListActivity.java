@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import net.pietu1998.wordbasehacker.solver.Game;
 
@@ -41,9 +42,9 @@ public class GameListActivity extends AppCompatActivity implements LoaderManager
 	private ArrayAdapter<Game> adapter;
 	private final List<Game> games = new ArrayList<>();
 	private SwipeRefreshLayout swipe = null;
-	private Snackbar snackbar;
+	private ListView list;
+	private TextView listEmpty;
 	private long lastModified = -1;
-
 
 	@SuppressLint("SdCardPath")
 	private static final String WORDBASE_DB_PATH = "/data/data/com.wordbaseapp/databases/wordbase.db";
@@ -71,7 +72,8 @@ public class GameListActivity extends AppCompatActivity implements LoaderManager
 			actionBar.setTitle(R.string.title_activity_game_list);
 
 		adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, games);
-		ListView list = (ListView) findViewById(R.id.list);
+		listEmpty = (TextView) findViewById(R.id.list_empty);
+		list = (ListView) findViewById(R.id.list);
 		list.setAdapter(adapter);
 		list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 			@Override
@@ -133,33 +135,31 @@ public class GameListActivity extends AppCompatActivity implements LoaderManager
 	public void onLoadFinished(Loader<LoadResult> loader, LoadResult result) {
 		swipe.setRefreshing(false);
 		if (result.message != 0) {
-			snackbar = Snackbar.make(swipe, result.message, Snackbar.LENGTH_INDEFINITE);
-			snackbar.show();
+			adapter.clear();
+			listEmpty.setText(result.message);
+			list.setVisibility(View.GONE);
+			listEmpty.setVisibility(View.VISIBLE);
 		} else {
-			boolean dismissSnackbar = true;
 			if (result.games != null) {
-				if (snackbar != null)
-					snackbar.dismiss();
 				lastModified = result.lastModified;
 				adapter.clear();
 				adapter.addAll(result.games);
 			} else if (result.explicit) {
-				snackbar = Snackbar.make(swipe, R.string.data_not_changed, Snackbar.LENGTH_LONG);
+				final Snackbar snackbar = Snackbar.make(swipe, R.string.data_not_changed, Snackbar.LENGTH_LONG);
 				snackbar.setAction(R.string.open, new View.OnClickListener() {
 					@Override
 					public void onClick(View view) {
-						if (snackbar != null)
-							snackbar.dismiss();
+						snackbar.dismiss();
 						Intent intent = new Intent();
 						intent.setComponent(new ComponentName("com.wordbaseapp", "com.wordbaseapp.GameMenuActivity"));
 						startActivity(intent);
 					}
 				});
 				snackbar.show();
-				dismissSnackbar = false;
 			}
-			if (dismissSnackbar && snackbar != null)
-				snackbar.dismiss();
+			listEmpty.setText(R.string.no_games);
+			list.setVisibility(adapter.isEmpty() ? View.GONE : View.VISIBLE);
+			listEmpty.setVisibility(adapter.isEmpty() ? View.VISIBLE : View.GONE);
 		}
 	}
 
@@ -202,7 +202,6 @@ public class GameListActivity extends AppCompatActivity implements LoaderManager
 			unknownOpponent = activity.getResources().getString(R.string.unknown_opponent);
 			String db = PreferenceManager.getDefaultSharedPreferences(activity).getString(activity.getString(R.string.pref_key_dbpath), "");
 			inputDb = db.isEmpty() ? WORDBASE_DB_PATH : db;
-			Log.d("WordbaseHacker", inputDb);
 			cacheDb = new File(activity.getCacheDir(), "wordbase.db");
 			this.lastModified = bundle.getLong("lastModified", -1);
 			this.explicit = bundle.getBoolean("explicit", false);
@@ -291,7 +290,9 @@ public class GameListActivity extends AppCompatActivity implements LoaderManager
 		protected void onStartLoading() {
 			forceLoad();
 			try {
-				activityReference.get().swipe.setRefreshing(true);
+				GameListActivity activity = activityReference.get();
+				activity.swipe.setRefreshing(true);
+				activity.listEmpty.setVisibility(View.GONE);
 			} catch (NullPointerException ignore) {}
 		}
 

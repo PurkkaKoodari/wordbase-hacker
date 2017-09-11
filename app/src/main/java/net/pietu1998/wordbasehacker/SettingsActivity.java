@@ -14,6 +14,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -31,7 +32,6 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        Log.d("WordbaseHacker", "options");
         if (item.getItemId() == android.R.id.home) {
             setResult(shouldReload);
             finish();
@@ -85,6 +85,7 @@ public class SettingsActivity extends AppCompatActivity {
                     intent.setComponent(new ComponentName("com.wordbaseapp", "com.wordbaseapp.BoardActivity"));
                     startActivity(intent);
                     ((HackerApplication) getActivity().getApplication()).editHudSettings();
+                    Toast.makeText(getActivity(), R.string.hud_edit_info, Toast.LENGTH_LONG).show();
                     return true;
                 }
             });
