@@ -39,11 +39,7 @@ public class Game implements Parcelable {
 		return boardId;
 	}
 
-	public int getOpponentId() {
-		return opponentId;
-	}
-
-	public String getLayout() {
+    public String getLayout() {
 		return layout;
 	}
 

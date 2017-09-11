@@ -51,8 +51,9 @@ public class BoardActivity extends AppCompatActivity {
 	private boolean changingValues = false;
 	private Game game;
 	private List<Possibility> possibilities = new ArrayList<>();
+	private Possibility best = null;
 	private char[] tileLetters = null;
-	private boolean loaded = false;
+	private boolean loaded = false, playing = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -70,10 +71,15 @@ public class BoardActivity extends AppCompatActivity {
 		play.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View view) {
+				if (best == null)
+					return;
+				playing = true;
 				Intent intent = new Intent();
 				intent.setComponent(new ComponentName("com.wordbaseapp", "com.wordbaseapp.BoardActivity"));
 				intent.putExtra("game_id", (long) game.getId());
 				startActivity(intent);
+				((HackerApplication) getApplication()).showSuggestedPath(best.getCoordinates());
+				Toast.makeText(BoardActivity.this, R.string.hud_close_info, Toast.LENGTH_LONG).show();
 			}
 		});
 		Parcelable extra = getIntent().getParcelableExtra("game");
@@ -88,21 +94,24 @@ public class BoardActivity extends AppCompatActivity {
 			actionBar.setTitle(getResources().getString(R.string.title_activity_board, game.getOpponent()));
 			actionBar.setDisplayHomeAsUpEnabled(true);
 		}
-		loaded = false;
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
-		if (loaded)
-			return;
-		loaded = true;
-		ProgressDialog dialog = new ProgressDialog(this);
-		dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		dialog.setCancelable(false);
-		dialog.show();
-		LoadTask task = new LoadTask(dialog);
-		task.execute();
+		if (playing) {
+			((HackerApplication) getApplication()).hudOperationDone();
+			playing = false;
+		}
+		if (!loaded) {
+			loaded = true;
+			ProgressDialog dialog = new ProgressDialog(this);
+			dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+			dialog.setCancelable(false);
+			dialog.show();
+			LoadTask task = new LoadTask(dialog);
+			task.execute();
+		}
 	}
 
 	@Override
@@ -222,7 +231,6 @@ public class BoardActivity extends AppCompatActivity {
 
 	private void updateView() {
 		int max = Integer.MIN_VALUE;
-		Possibility best = null;
 		for (Possibility pos : possibilities) {
 			int score = scoring.calculateScore(pos.getScore());
 			if (score > max) {

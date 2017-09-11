@@ -19,8 +19,8 @@ Wordbase Hacker is licensed under the [MIT license](https://opensource.org/licen
   - finding possible words
   - scoring words on different categories
   - displaying result exactly as in the game
+  - HUD on top of the game to show the word to play
 
 ### To be implemented
 
-  - HUD to be placed over game view
   - automatic playing (?)

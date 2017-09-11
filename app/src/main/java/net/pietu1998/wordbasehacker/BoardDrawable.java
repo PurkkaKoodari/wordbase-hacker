@@ -58,12 +58,6 @@ public class BoardDrawable extends Drawable {
 		Paint whiteText = new Paint(blackText);
 		whiteText.setColor(0xFFFFFFFF);
 
-		Paint path = new Paint();
-		path.setStyle(Paint.Style.STROKE);
-		path.setStrokeWidth(8);
-		path.setStrokeCap(Paint.Cap.ROUND);
-		path.setColor(0xFF009900);
-
 		int[] tileStates = pos.getResult();
 		for (int y = 0, index = 0; y < 13; y++) {
 			for (int x = 0; x < 10; x++, index++) {
@@ -84,22 +78,31 @@ public class BoardDrawable extends Drawable {
 						(t & (Tile.MINE | Tile.SUPER_MINE)) != 0 ? whiteText : blackText);
 			}
 		}
-		if (pos.getCoordinates().length > 2) {
-			byte[] c = pos.getCoordinates();
-			canvas.drawCircle(80 * c[0] + 40, 80 * c[1] + 40, 32, path);
-			if (c[0] != c[2] && c[1] != c[3])
-				canvas.drawLine(c[0] * 80 + (c[2] - c[0]) * SQRT512 + 40, c[1] * 80 + (c[3] - c[1])
-						* SQRT512 + 40, c[2] * 80 + 40, c[3] * 80 + 40, path);
-			else if (c[0] == c[2])
-				canvas.drawLine(80 * c[0] + 40, 48 * c[1] + 32 * c[3] + 40, 80 * c[2] + 40, 80 * c[3] + 40,
-						path);
-			else
-				canvas.drawLine(48 * c[0] + 32 * c[2] + 40, 80 * c[1] + 40, 80 * c[2] + 40, 80 * c[3] + 40,
-						path);
-			for (int i = 2; i < c.length - 2; i += 2) {
-				canvas.drawLine(80 * c[i] + 40, 80 * c[i + 1] + 40, 80 * c[i + 2] + 40, 80 * c[i + 3] + 40, path);
-			}
-		}
+		drawPath(canvas, pos.getCoordinates());
+	}
+
+	public static void drawPath(@NonNull Canvas canvas, byte[] coords) {
+		if (coords.length <= 2)
+			return;
+		Paint paint = new Paint();
+		paint.setStyle(Paint.Style.STROKE);
+		paint.setStrokeWidth(8);
+		paint.setStrokeCap(Paint.Cap.ROUND);
+		paint.setColor(0xFF009900);
+		canvas.drawCircle(80 * coords[0] + 40, 80 * coords[1] + 40, 32, paint);
+		if (coords[0] != coords[2] && coords[1] != coords[3])
+			canvas.drawLine(coords[0] * 80 + (coords[2] - coords[0]) * SQRT512 + 40,
+					coords[1] * 80 + (coords[3] - coords[1]) * SQRT512 + 40,
+					coords[2] * 80 + 40, coords[3] * 80 + 40, paint);
+		else if (coords[0] == coords[2])
+			canvas.drawLine(80 * coords[0] + 40, 48 * coords[1] + 32 * coords[3] + 40,
+					80 * coords[2] + 40, 80 * coords[3] + 40, paint);
+		else
+			canvas.drawLine(48 * coords[0] + 32 * coords[2] + 40, 80 * coords[1] + 40,
+					80 * coords[2] + 40, 80 * coords[3] + 40, paint);
+		for (int i = 2; i < coords.length - 2; i += 2)
+			canvas.drawLine(80 * coords[i] + 40, 80 * coords[i + 1] + 40,
+					80 * coords[i + 2] + 40, 80 * coords[i + 3] + 40, paint);
 	}
 
 	@Override

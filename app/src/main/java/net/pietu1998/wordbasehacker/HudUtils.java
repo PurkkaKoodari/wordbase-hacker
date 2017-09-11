@@ -19,11 +19,6 @@ public final class HudUtils {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.pref_key_hud), true);
     }
 
-    public static boolean isHudAutoEnabled(Context context) {
-        return isHudEnabled(context) &&
-                PreferenceManager.getDefaultSharedPreferences(context).getBoolean(context.getString(R.string.pref_key_hudauto), true);
-    }
-
     public static boolean canShowHud(Context context) {
         return Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(context);
     }

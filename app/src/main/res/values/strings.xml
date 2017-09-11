@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 
     <string name="app_name">Wordbase Hacker</string>
     <string name="title_activity_game_list">Choose game</string>
@@ -42,22 +42,26 @@
     <string name="allow_draw_on_top_settings">In order to assist you in playing the best word, Wordbase Hacker must be allowed to draw on top of Wordbase. Press OK to open settings.</string>
     <string name="data_not_changed">The database has not changed. Open Wordbase to update it.</string>
     <string name="open">Open</string>
+    <string name="hud_close_info">Press back to return and close HUD.</string>
 
     <!-- Preference keys -->
-    <string name="pref_key_hud">hud</string>
-    <string name="pref_key_hudauto">hudauto</string>
-    <string name="pref_key_dbpath">dbpath</string>
-    <string name="pref_key_version">version</string>
-    <string name="pref_key_license">license</string>
-    <string name="pref_key_source">source</string>
+    <string name="pref_key_hud"><xliff:g>hud</xliff:g></string>
+    <string name="pref_key_hudedit"><xliff:g>hudedit</xliff:g></string>
+    <string name="pref_key_hudx"><xliff:g>hudx</xliff:g></string>
+    <string name="pref_key_hudy"><xliff:g>hudy</xliff:g></string>
+    <string name="pref_key_hudwidth"><xliff:g>hudwidth</xliff:g></string>
+    <string name="pref_key_dbpath"><xliff:g>dbpath</xliff:g></string>
+    <string name="pref_key_version"><xliff:g>version</xliff:g></string>
+    <string name="pref_key_license"><xliff:g>license</xliff:g></string>
+    <string name="pref_key_source"><xliff:g>source</xliff:g></string>
 
     <!-- Preference UI strings -->
     <string name="pref_category_hud">HUD</string>
     <string name="pref_category_about">About</string>
     <string name="pref_hud">Enable HUD</string>
     <string name="pref_desc_hud">Enables a HUD that displays the recommended word on top of the Wordbase app.</string>
-    <string name="pref_hudauto">Automatic HUD visibility</string>
-    <string name="pref_desc_hudauto">Automatically show/hide the HUD when Wordbase is opened. Uncheck if the HUD does not appear or to save battery.</string>
+    <string name="pref_hudedit">HUD position &amp; size</string>
+    <string name="pref_desc_hudedit">Tap to change HUD position and size.</string>
     <string name="pref_version">Version</string>
     <string name="pref_license">License</string>
     <string name="pref_desc_license">Copyright &#169; Pietu1998 2015&#8211;2017\nLicensed under the MIT license.</string>

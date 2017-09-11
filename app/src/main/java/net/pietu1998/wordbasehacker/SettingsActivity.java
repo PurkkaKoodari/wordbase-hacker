@@ -1,6 +1,7 @@
 package net.pietu1998.wordbasehacker;
 
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -76,15 +77,14 @@ public class SettingsActivity extends AppCompatActivity {
             String currentDbPath = sharedPreferences.getString(dbPathPreference.getKey(), "");
             pathChangeListener.onPreferenceChange(dbPathPreference, currentDbPath);
 
-            final Preference hudAutoPreference = findPreference(getString(R.string.pref_key_hudauto));
-            hudAutoPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            final Preference hudEditPreference = findPreference(getString(R.string.pref_key_hudedit));
+            hudEditPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
-                public boolean onPreferenceChange(Preference preference, Object value) {
-                    boolean enabled = (boolean) value;
-                    if (enabled)
-                        ((HackerApplication) getActivity().getApplication()).startHudUpdateTimer();
-                    else
-                        ((HackerApplication) getActivity().getApplication()).stopHudUpdateTimer();
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent intent = new Intent();
+                    intent.setComponent(new ComponentName("com.wordbaseapp", "com.wordbaseapp.BoardActivity"));
+                    startActivity(intent);
+                    ((HackerApplication) getActivity().getApplication()).editHudSettings();
                     return true;
                 }
             });
@@ -97,7 +97,7 @@ public class SettingsActivity extends AppCompatActivity {
                         HudUtils.requestHudPermission(getActivity(), true);
                         return false;
                     }
-                    hudAutoPreference.setEnabled(enabled);
+                    hudEditPreference.setEnabled(enabled);
                     if (enabled)
                         ((HackerApplication) getActivity().getApplication()).startHudService();
                     else

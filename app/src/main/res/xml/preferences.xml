@@ -9,11 +9,10 @@
             android:summary="@string/pref_desc_hud"
             android:defaultValue="true"/>
 
-        <SwitchPreference
-            android:key="@string/pref_key_hudauto"
-            android:title="@string/pref_hudauto"
-            android:summary="@string/pref_desc_hudauto"
-            android:defaultValue="true"/>
+        <Preference
+            android:key="@string/pref_key_hudedit"
+            android:title="@string/pref_hudedit"
+            android:summary="@string/pref_desc_hudedit"/>
 
     </PreferenceCategory>
 

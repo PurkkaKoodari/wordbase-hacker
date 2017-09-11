@@ -54,14 +54,19 @@ public class HackerApplication extends Application {
         }
     }
 
-    public void startHudUpdateTimer() {
+    public void editHudSettings() {
         if (service != null)
-            service.startTimer();
+            service.editHudSettings();
     }
 
-    public void stopHudUpdateTimer() {
+    public void showSuggestedPath(byte[] coords) {
         if (service != null)
-            service.stopTimer();
+            service.showSuggestedPath(coords);
+    }
+
+    public void hudOperationDone() {
+        if (service != null)
+            service.hudOperationDone();
     }
 
 }
