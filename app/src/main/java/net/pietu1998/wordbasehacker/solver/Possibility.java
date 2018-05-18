@@ -9,18 +9,18 @@ public class Possibility {
 	@NonNull
 	private final String word;
 	private final int[] result = new int[130];
-	private Score score;
+	private int score;
 
 	public Possibility(@NonNull byte[] coordinates, @NonNull String word) {
 		this.coordinates = coordinates;
 		this.word = word;
 	}
 
-	public Score getScore() {
+	public int getScore() {
 		return score;
 	}
 
-	public void setScore(Score score) {
+	public void setScore(int score) {
 		this.score = score;
 	}
 

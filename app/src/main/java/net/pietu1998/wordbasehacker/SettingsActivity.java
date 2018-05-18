@@ -12,9 +12,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -22,6 +20,7 @@ public class SettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ThemeUtils.setTheme(this);
         super.onCreate(savedInstanceState);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null)
@@ -54,61 +53,75 @@ public class SettingsActivity extends AppCompatActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences);
 
-            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-            listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-                @Override
-                public void onSharedPreferenceChanged(SharedPreferences preferences, String key) {
-                    if (key.equals(getString(R.string.pref_key_dbpath)))
-                        ((SettingsActivity) getActivity()).shouldReload = GameListActivity.SHOULD_RELOAD;
-                }
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            listener = (preferences, key) -> {
+                if (key.equals(getString(R.string.pref_key_dbpath)))
+                    ((SettingsActivity) getActivity()).shouldReload = GameListActivity.SHOULD_RELOAD;
             };
-            sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
+            prefs.registerOnSharedPreferenceChangeListener(listener);
+
+            final Preference nativeParamsPreference = findPreference(getString(R.string.pref_key_native_params));
+            nativeParamsPreference.setOnPreferenceClickListener(preference -> {
+                new NativeParamsDialog(getActivity()).show();
+                return true;
+            });
+
+            final Preference nativePreference = findPreference(getString(R.string.pref_key_native));
+            nativePreference.setOnPreferenceChangeListener((preference, value) -> {
+                nativePreference.setSummary((Boolean) value ? R.string.pref_desc_native_on : R.string.pref_desc_native_off);
+                nativeParamsPreference.setEnabled((Boolean) value);
+                return true;
+            });
+            boolean useNative = prefs.getBoolean(nativePreference.getKey(), true);
+            nativePreference.setSummary(useNative ? R.string.pref_desc_native_on : R.string.pref_desc_native_off);
+            nativeParamsPreference.setEnabled(useNative);
+
+            Preference themePreference = findPreference(getString(R.string.pref_key_darktheme));
+            themePreference.setOnPreferenceChangeListener((preference, o) -> {
+                getActivity().setResult(GameListActivity.SHOULD_RESTART);
+                getActivity().finish();
+                Intent intent = new Intent(getActivity(), SettingsActivity.class);
+                startActivity(intent);
+                return true;
+            });
 
             Preference dbPathPreference = findPreference(getString(R.string.pref_key_dbpath));
-            Preference.OnPreferenceChangeListener pathChangeListener = new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object value) {
-                    String stringValue = value.toString();
-                    preference.setSummary(stringValue.isEmpty() ? getString(R.string.pref_desc_dbpath) : stringValue);
-                    return true;
-                }
+            Preference.OnPreferenceChangeListener pathChangeListener = (preference, value) -> {
+                String stringValue = value.toString();
+                preference.setSummary(stringValue.isEmpty() ? getString(R.string.pref_desc_dbpath) : stringValue);
+                return true;
             };
             dbPathPreference.setOnPreferenceChangeListener(pathChangeListener);
-            String currentDbPath = sharedPreferences.getString(dbPathPreference.getKey(), "");
+            String currentDbPath = prefs.getString(dbPathPreference.getKey(), "");
             pathChangeListener.onPreferenceChange(dbPathPreference, currentDbPath);
 
             final Preference hudEditPreference = findPreference(getString(R.string.pref_key_hudedit));
-            hudEditPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
+            hudEditPreference.setOnPreferenceClickListener(preference -> {
+                HudUtils.showHudInfo(getActivity(), R.string.pref_key_hide_edit_info, R.string.hud_edit_info, () -> {
                     Intent intent = new Intent();
                     intent.setComponent(new ComponentName("com.wordbaseapp", "com.wordbaseapp.BoardActivity"));
                     startActivity(intent);
                     ((HackerApplication) getActivity().getApplication()).editHudSettings();
-                    Toast.makeText(getActivity(), R.string.hud_edit_info, Toast.LENGTH_LONG).show();
-                    return true;
-                }
+                });
+                return true;
             });
 
-            Preference.OnPreferenceChangeListener hudEnableListener = new Preference.OnPreferenceChangeListener() {
-                @Override
-                public boolean onPreferenceChange(Preference preference, Object value) {
-                    boolean enabled = (boolean) value;
-                    if (enabled && !HudUtils.canShowHud(getActivity())) {
-                        HudUtils.requestHudPermission(getActivity(), true);
-                        return false;
-                    }
-                    hudEditPreference.setEnabled(enabled);
-                    if (enabled)
-                        ((HackerApplication) getActivity().getApplication()).startHudService();
-                    else
-                        ((HackerApplication) getActivity().getApplication()).stopHudService();
-                    return true;
+            Preference.OnPreferenceChangeListener hudEnableListener = (preference, value) -> {
+                boolean enabled = (boolean) value;
+                if (enabled && !HudUtils.canShowHud(getActivity())) {
+                    HudUtils.requestHudPermission(getActivity(), true);
+                    return false;
                 }
+                hudEditPreference.setEnabled(enabled);
+                if (enabled)
+                    ((HackerApplication) getActivity().getApplication()).startHudService();
+                else
+                    ((HackerApplication) getActivity().getApplication()).stopHudService();
+                return true;
             };
             Preference hudPreference = findPreference(getString(R.string.pref_key_hud));
             hudPreference.setOnPreferenceChangeListener(hudEnableListener);
-            hudEnableListener.onPreferenceChange(hudPreference, sharedPreferences.getBoolean(hudPreference.getKey(), true));
+            hudEnableListener.onPreferenceChange(hudPreference, prefs.getBoolean(hudPreference.getKey(), true));
 
             try {
                 String version = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0).versionName;
@@ -119,13 +132,10 @@ public class SettingsActivity extends AppCompatActivity {
                 findPreference(getString(R.string.pref_key_version)).setSummary(R.string.internal_error);
             }
 
-            findPreference(getString(R.string.pref_key_source)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.bitbucket_url)));
-                    startActivity(intent);
-                    return true;
-                }
+            findPreference(getString(R.string.pref_key_source)).setOnPreferenceClickListener(preference -> {
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.bitbucket_url)));
+                startActivity(intent);
+                return true;
             });
         }
 

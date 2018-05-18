@@ -1,20 +1,23 @@
 package net.pietu1998.wordbasehacker.solver;
 
+import java.util.List;
+
 public class Move {
 
-	private final String layout, word;
+    private final List<Tile> layout;
+    private final String word;
 
-	public Move(String layout, String word) {
-		this.layout = layout;
-		this.word = word;
-	}
+    public Move(List<Tile> layout, String word) {
+        this.layout = layout;
+        this.word = word;
+    }
 
-	public String getLayout() {
-		return layout;
-	}
+    public List<Tile> getLayout() {
+        return layout;
+    }
 
-	public String getWord() {
-		return word;
-	}
-	
+    public String getWord() {
+        return word;
+    }
+
 }

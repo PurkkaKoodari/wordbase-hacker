@@ -6,13 +6,8 @@
 
     <item
         android:id="@+id/action_wordbase"
-        android:title="@string/open_wordbase"
+        android:title="@string/play"
         android:icon="@drawable/ic_wordbase"
-        app:showAsAction="ifRoom"/>
-    <item
-        android:id="@+id/action_settings"
-        android:title="@string/title_activity_settings"
-        android:icon="@android:drawable/ic_menu_preferences"
         app:showAsAction="always"/>
 
 </menu>

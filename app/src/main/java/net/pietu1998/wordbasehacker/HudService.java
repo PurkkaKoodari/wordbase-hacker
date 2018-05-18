@@ -56,9 +56,15 @@ public class HudService extends Service {
     private void showHudIfPossible() {
         if (!windowShown && HudUtils.canShowHud(this)) {
             windowShown = true;
-            WindowManager.LayoutParams params = new WindowManager.LayoutParams(WindowManager.LayoutParams.MATCH_PARENT,
-                    WindowManager.LayoutParams.MATCH_PARENT, getOverlayType(),
-                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            int untouchable = settingMode ? 0 : WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE;
+            WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    WindowManager.LayoutParams.MATCH_PARENT,
+                    getOverlayType(),
+                    WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                            | WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS
+                            | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
+                            | untouchable,
                     PixelFormat.TRANSLUCENT);
             params.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
             params.gravity = Gravity.TOP | Gravity.START;

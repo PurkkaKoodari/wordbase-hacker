@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.1"
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
 
     defaultConfig {
         applicationId "net.pietu1998.wordbasehacker"
         minSdkVersion 21
-        targetSdkVersion 26
+        targetSdkVersion 27
     }
 
     buildTypes {
@@ -16,13 +16,23 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
     }
+    externalNativeBuild {
+        cmake {
+            path 'src/main/cpp/CMakeLists.txt'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
-    compile ('com.googlecode.json-simple:json-simple:1.+') {
+    implementation('com.googlecode.json-simple:json-simple:1.+') {
         exclude group: 'junit'
     }
-    compile 'com.android.support:support-core-utils:26.0.+'
-    compile 'com.android.support:design:26.0.+'
-    compile 'com.android.support:appcompat-v7:26.0.+'
+    implementation 'com.android.support:support-core-utils:27.1.1'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:preference-v7:27.1.1'
 }

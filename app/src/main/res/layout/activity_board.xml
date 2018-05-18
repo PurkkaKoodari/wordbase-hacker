@@ -1,41 +1,72 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="5dp"
-    tools:context=".BoardActivity" >
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:padding="5dp"
+              tools:context=".BoardActivity">
 
     <LinearLayout
+        style="?android:attr/buttonBarStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        style="?android:attr/buttonBarStyle">
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/scoring_btn"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/scoring"
-            style="?android:attr/buttonBarButtonStyle"/>
+            android:text="@string/scoring"/>
+
+        <Button
+            android:id="@+id/params_btn"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/params"/>
 
         <Button
             android:id="@+id/play_btn"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/play"
-            style="?android:attr/buttonBarButtonStyle"/>
+            android:text="@string/play"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"/>
+
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="start|center_vertical"
+            android:paddingStart="5dp"
+            android:paddingEnd="5dp"
+            android:textAppearance="@android:style/TextAppearance.Material.Subhead"/>
+
     </LinearLayout>
 
     <TextView
-        android:id="@+id/status"
+        android:id="@+id/result"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="top|center_horizontal"
-        android:text=""
-        android:textAppearance="@android:style/TextAppearance.Material.Widget.TextView" />
+        android:textAppearance="@android:style/TextAppearance.Material.Subhead"/>
+
 
     <ImageView
         android:id="@+id/move_picture"
@@ -43,6 +74,6 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:contentDescription="@string/board_description"
-        android:scaleType="fitCenter" />
+        android:scaleType="fitCenter"/>
 
 </LinearLayout>

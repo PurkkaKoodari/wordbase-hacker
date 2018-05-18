@@ -8,7 +8,6 @@ import android.graphics.Path;
 import android.graphics.RectF;
 import android.preference.PreferenceManager;
 import android.support.v4.math.MathUtils;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -23,67 +22,64 @@ public class HudView extends View {
         x = preferences.getInt(context.getString(R.string.pref_key_hudx), 0);
         y = preferences.getInt(context.getString(R.string.pref_key_hudy), 0);
         width = preferences.getInt(context.getString(R.string.pref_key_hudwidth), defaultWidth);
-        setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent event) {
-                int screenWidth = getWidth();
-                int screenHeight = getHeight();
-                int buttonSize = screenWidth / 10;
-                RectF moveButton = new RectF(screenWidth / 2 - buttonSize, screenHeight / 2 - buttonSize,
-                        screenWidth / 2 + buttonSize, screenHeight / 2 + buttonSize);
-                RectF resizeButton = new RectF(0, screenHeight / 2 - buttonSize,
-                        buttonSize * 2, screenHeight / 2 + buttonSize);
-                RectF acceptButton = new RectF(screenWidth - buttonSize * 2, screenHeight / 2 - buttonSize,
-                        screenWidth, screenHeight / 2 + buttonSize);
-                int action = event.getAction() & MotionEvent.ACTION_MASK;
-                switch (action) {
-                    case MotionEvent.ACTION_DOWN:
-                        if (moving || resizing || accepting)
-                            break;
-                        if (moveButton.contains(event.getX(), event.getY()))
-                            moving = true;
-                        else if (resizeButton.contains(event.getX(), event.getY()))
-                            resizing = true;
-                        else if (acceptButton.contains(event.getX(), event.getY()))
-                            accepting = true;
-                        startX = event.getX();
-                        startY = event.getY();
-                        origX = x;
-                        origY = y;
-                        origWidth = width;
-                        invalidate();
+        setOnTouchListener((view, event) -> {
+            int screenWidth = getWidth();
+            int screenHeight = getHeight();
+            int buttonSize = screenWidth / 10;
+            RectF moveButton = new RectF(screenWidth / 2 - buttonSize, screenHeight / 2 - buttonSize,
+                    screenWidth / 2 + buttonSize, screenHeight / 2 + buttonSize);
+            RectF resizeButton = new RectF(0, screenHeight / 2 - buttonSize,
+                    buttonSize * 2, screenHeight / 2 + buttonSize);
+            RectF acceptButton = new RectF(screenWidth - buttonSize * 2, screenHeight / 2 - buttonSize,
+                    screenWidth, screenHeight / 2 + buttonSize);
+            int action = event.getAction() & MotionEvent.ACTION_MASK;
+            switch (action) {
+                case MotionEvent.ACTION_DOWN:
+                    if (moving || resizing || accepting)
                         break;
-                    case MotionEvent.ACTION_UP:
-                    case MotionEvent.ACTION_MOVE:
-                        if (moving) {
-                            x = MathUtils.clamp(origX + (int) ((event.getX() - startX) / 4), 0, Math.max(0, screenWidth - width));
-                            y = MathUtils.clamp(origY + (int) ((event.getY() - startY) / 4), 0, Math.max(0, (int) (screenHeight - 1.3f * width)));
-                        } else if (resizing) {
-                            width = MathUtils.clamp(origWidth + (int) ((startY - event.getY()) / 4), 50, Math.max(50, screenWidth - x));
-                        } else if (accepting && !acceptButton.contains(event.getX(), event.getY())) {
-                            accepting = false;
+                    if (moveButton.contains(event.getX(), event.getY()))
+                        moving = true;
+                    else if (resizeButton.contains(event.getX(), event.getY()))
+                        resizing = true;
+                    else if (acceptButton.contains(event.getX(), event.getY()))
+                        accepting = true;
+                    startX = event.getX();
+                    startY = event.getY();
+                    origX = x;
+                    origY = y;
+                    origWidth = width;
+                    invalidate();
+                    break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_MOVE:
+                    if (moving) {
+                        x = MathUtils.clamp(origX + (int) ((event.getX() - startX) / 4), 0, Math.max(0, screenWidth - width));
+                        y = MathUtils.clamp(origY + (int) ((event.getY() - startY) / 4), 0, Math.max(0, (int) (screenHeight - 1.3f * width)));
+                    } else if (resizing) {
+                        width = MathUtils.clamp(origWidth + (int) ((startY - event.getY()) / 4), 50, Math.max(50, screenWidth - x));
+                    } else if (accepting && !acceptButton.contains(event.getX(), event.getY())) {
+                        accepting = false;
+                    }
+                    if (action == MotionEvent.ACTION_UP) {
+                        if (accepting) {
+                            PreferenceManager.getDefaultSharedPreferences(service).edit()
+                                    .putInt(service.getString(R.string.pref_key_hudx), x)
+                                    .putInt(service.getString(R.string.pref_key_hudy), y)
+                                    .putInt(service.getString(R.string.pref_key_hudwidth), width)
+                                    .apply();
+                            service.hudOperationDone();
                         }
-                        if (action == MotionEvent.ACTION_UP) {
-                            if (accepting) {
-                                PreferenceManager.getDefaultSharedPreferences(service).edit()
-                                        .putInt(service.getString(R.string.pref_key_hudx), x)
-                                        .putInt(service.getString(R.string.pref_key_hudy), y)
-                                        .putInt(service.getString(R.string.pref_key_hudwidth), width)
-                                        .apply();
-                                service.hudOperationDone();
-                            }
-                            moving = resizing = accepting = false;
-                        }
-                        invalidate();
-                        break;
-                }
-                return true;
+                        moving = resizing = accepting = false;
+                    }
+                    invalidate();
+                    break;
             }
+            return true;
         });
     }
 
     private boolean editMode = false;
-    private int x = 0, y = 0, width = 800;
+    private int x, y, width;
 
     private byte[] coordinates;
 

@@ -1,16 +1,31 @@
 package net.pietu1998.wordbasehacker;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import android.app.AlertDialog;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Parcelable;
+import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import net.pietu1998.wordbasehacker.solver.Board;
 import net.pietu1998.wordbasehacker.solver.Game;
+import net.pietu1998.wordbasehacker.solver.LegacySolver;
 import net.pietu1998.wordbasehacker.solver.Move;
+import net.pietu1998.wordbasehacker.solver.NativeSolver;
 import net.pietu1998.wordbasehacker.solver.Possibility;
 import net.pietu1998.wordbasehacker.solver.Scoring;
 import net.pietu1998.wordbasehacker.solver.Tile;
@@ -19,69 +34,41 @@ import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
-import android.content.ComponentName;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Parcelable;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.TextWatcher;
-import android.util.Log;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BoardActivity extends AppCompatActivity {
 
-	private Scoring currentScoring, scoring = Scoring.DEFAULT;
-	private boolean changingValues = false;
+	private Scoring scoring = Scoring.DEFAULT;
+	private NativeSolver.Params nativeParams = NativeSolver.Params.DEFAULT;
 	private Game game;
-	private List<Possibility> possibilities = new ArrayList<>();
-	private Possibility best = null;
+	private Possibility bestPossibility = null;
 	private char[] tileLetters = null;
 	private boolean loaded = false, playing = false;
+	private boolean useNative;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+        ThemeUtils.setTheme(this);
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_board);
-		loadScoring();
-		Button scoring = (Button) findViewById(R.id.scoring_btn);
-		scoring.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				scoringDialog();
-			}
-		});
-		Button play = (Button) findViewById(R.id.play_btn);
-		play.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View view) {
-				if (best == null)
-					return;
-				playing = true;
-				Intent intent = new Intent();
-				intent.setComponent(new ComponentName("com.wordbaseapp", "com.wordbaseapp.BoardActivity"));
-				intent.putExtra("game_id", (long) game.getId());
-				startActivity(intent);
-				((HackerApplication) getApplication()).showSuggestedPath(best.getCoordinates());
-				Toast.makeText(BoardActivity.this, R.string.hud_close_info, Toast.LENGTH_LONG).show();
-			}
-		});
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(BoardActivity.this);
+        useNative = prefs.getBoolean(getString(R.string.pref_key_native), false);
+
+        loadScoring();
+		Button scoring = findViewById(R.id.scoring_btn);
+		scoring.setOnClickListener(v -> scoringDialog());
+		Button params = findViewById(R.id.params_btn);
+		params.setOnClickListener(v -> nativeParamsDialog());
+		params.setVisibility(useNative ? View.VISIBLE : View.GONE);
+		Button play = findViewById(R.id.play_btn);
+		play.setOnClickListener(view -> playWord());
 		Parcelable extra = getIntent().getParcelableExtra("game");
 		if (!(extra instanceof Game)) {
 			Toast.makeText(this, R.string.internal_error, Toast.LENGTH_SHORT).show();
@@ -91,9 +78,24 @@ public class BoardActivity extends AppCompatActivity {
 		game = (Game) extra;
 		ActionBar actionBar = getSupportActionBar();
 		if (actionBar != null) {
-			actionBar.setTitle(getResources().getString(R.string.title_activity_board, game.getOpponent()));
+			actionBar.setTitle(getString(R.string.title_activity_board, game.getOpponent()));
 			actionBar.setDisplayHomeAsUpEnabled(true);
 		}
+		if (savedInstanceState != null) {
+            loaded = savedInstanceState.getBoolean("loaded");
+            tileLetters = savedInstanceState.getCharArray("tileLetters");
+            String bestWord = savedInstanceState.getString("bestWord");
+            byte[] bestPositions = savedInstanceState.getByteArray("bestPositions");
+            int[] bestResult = savedInstanceState.getIntArray("bestResult");
+            int bestScore = savedInstanceState.getInt("bestScore");
+            if (bestWord != null && bestPositions != null && bestResult != null) {
+                Possibility pos = new Possibility(bestPositions, bestWord);
+                pos.setScore(bestScore);
+                pos.setResult(bestResult);
+                bestPossibility = pos;
+                updateView();
+            }
+        }
 	}
 
 	@Override
@@ -105,31 +107,93 @@ public class BoardActivity extends AppCompatActivity {
 		}
 		if (!loaded) {
 			loaded = true;
-			ProgressDialog dialog = new ProgressDialog(this);
-			dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-			dialog.setCancelable(false);
-			dialog.show();
-			LoadTask task = new LoadTask(dialog);
-			task.execute();
+            if (useNative && NativeSolver.isBusy()) {
+                new AlertDialog.Builder(BoardActivity.this).setMessage(R.string.solver_busy)
+                        .setNeutralButton(R.string.ok, (dialog, which) -> finish()).show();
+            } else {
+                LoadTask task = new LoadTask();
+                task.execute();
+            }
 		}
+	}
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+	    outState.putBoolean("loaded", loaded);
+	    if (bestPossibility != null) {
+	        outState.putString("bestWord", bestPossibility.getWord());
+	        outState.putByteArray("bestPositions", bestPossibility.getCoordinates());
+	        outState.putIntArray("bestResult", bestPossibility.getResult());
+	        outState.putInt("bestScore", bestPossibility.getScore());
+	        outState.putCharArray("tileLetters", tileLetters);
+        }
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.boardmenu, menu);
+		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		if (item.getItemId() == android.R.id.home) {
-			finish();
-			return true;
+		switch (item.getItemId()) {
+			case android.R.id.home:
+				finish();
+				return true;
+            case R.id.action_wordbase:
+            	playWord();
+                return true;
 		}
 		return super.onOptionsItemSelected(item);
 	}
 
+	private void playWord() {
+		if (HudUtils.isHudEnabled(this)) {
+			Toast.makeText(BoardActivity.this, R.string.play_no_hud_info, Toast.LENGTH_LONG).show();
+			playWordWithoutInfo();
+		} else {
+			HudUtils.showHudInfo(this, R.string.pref_key_hide_play_info, R.string.play_hud_info, this::playWordWithoutInfo);
+		}
+	}
+
+	private void playWordWithoutInfo() {
+		playing = true;
+		Intent intent = new Intent();
+		intent.setComponent(new ComponentName("com.wordbaseapp", "com.wordbaseapp.BoardActivity"));
+		intent.putExtra("game_id", (long) game.getId());
+		startActivity(intent);
+		if (bestPossibility != null)
+			((HackerApplication) getApplication()).showSuggestedPath(bestPossibility.getCoordinates());
+	}
+
 	private class LoadTask extends AsyncTask<Void, Integer, Integer> {
 
-		private final ProgressDialog dialog;
-
-		public LoadTask(ProgressDialog dialog) {
-			this.dialog = dialog;
-		}
+	    private List<Tile> parseLayout(String json) throws ParseException {
+            JSONArray jsonLayout = (JSONArray) new JSONParser().parse(json);
+            List<Tile> layout = new ArrayList<>();
+            for (Object o : jsonLayout) {
+                JSONArray tile = (JSONArray) o;
+                int flags = 0;
+                Object type = tile.get(0);
+                if ("Base".equals(type))
+                    flags |= Tile.BASE;
+                else if ("Mine".equals(type))
+                    flags |= Tile.MINE;
+                else if ("SuperMine".equals(type))
+                    flags |= Tile.SUPER_MINE;
+                Object owner = tile.get(3);
+                if ("player".equals(owner))
+                    flags |= Tile.PLAYER;
+                else if ("opponent".equals(owner))
+                    flags |= Tile.OPPONENT;
+                int x = Integer.parseInt((String) tile.get(1));
+                int y = Integer.parseInt((String) tile.get(2));
+                layout.add(new Tile(x, y, flags));
+            }
+            return layout;
+        }
 
 		@Override
 		protected Integer doInBackground(Void... params) {
@@ -138,9 +202,6 @@ public class BoardActivity extends AppCompatActivity {
 
 				File cacheDb = new File(getCacheDir(), "wordbase.db");
 				SQLiteDatabase db = SQLiteDatabase.openDatabase(cacheDb.getPath(), null, SQLiteDatabase.OPEN_READONLY);
-
-				List<Move> moves = new ArrayList<>();
-				moves.add(new Move(game.getLayout(), ""));
 
 				Cursor boardCursor = db.query("boards", new String[] { "rows", "words" }, "_id=" + game.getBoardId(),
 						null, null, null, null);
@@ -153,75 +214,77 @@ public class BoardActivity extends AppCompatActivity {
 				String[] words = boardCursor.getString(1).replaceAll("[\\[\\]\\s]", "").split(",");
 				boardCursor.close();
 
+                char board[] = new char[130];
+                for (int i = 0, j = 0; j < rows.length; j++) {
+                    for (int k = 0; k < rows[j].length(); i++, k++) {
+                        board[i] = rows[j].charAt(k);
+                    }
+                }
+
+                List<Tile> layout = parseLayout(game.getLayout());
+
 				publishProgress(R.string.loading_moves);
+                List<Move> moves = new ArrayList<>();
 				Cursor movesCursor = db.query("moves", new String[] { "fields", "word" }, "game_id=" + game.getId(),
 						null, null, null, "created_at ASC");
 				while (movesCursor.moveToNext())
-					moves.add(new Move(movesCursor.getString(0), movesCursor.getString(1)));
+                    moves.add(new Move(parseLayout(movesCursor.getString(0)), movesCursor.getString(1)));
 				movesCursor.close();
 
 				db.close();
 
-				publishProgress(R.string.applying_moves);
-				int[] tileStates = new int[130];
-				for (Move move : moves) {
-					JSONArray jsonLayout = (JSONArray) new JSONParser().parse(move.getLayout());
-					game.addWord(move.getWord());
-					for (Object o : jsonLayout) {
-						JSONArray tile = (JSONArray) o;
-						int flags = 0;
-						Object type = tile.get(0);
-						if ("Base".equals(type))
-							flags |= Tile.BASE;
-						else if ("Mine".equals(type))
-							flags |= Tile.MINE;
-						else if ("SuperMine".equals(type))
-							flags |= Tile.SUPER_MINE;
-						Object owner = tile.get(3);
-						if ("player".equals(owner))
-							flags |= Tile.PLAYER;
-						else if ("opponent".equals(owner))
-							flags |= Tile.OPPONENT;
-						int x = Integer.parseInt((String) tile.get(1));
-						int y = Integer.parseInt((String) tile.get(2));
-						tileStates[x + 10 * y] = flags;
-					}
-				}
-
-				publishProgress(R.string.analyzing_words);
-				Board board = new Board(rows, tileStates, words, game);
-
-				publishProgress(R.string.finding_words);
-				board.findWords();
-
-				publishProgress(R.string.scoring_words);
-				board.scoreWords(game.isFlipped());
-
-				tileLetters = board.getTileLetters();
-				possibilities = board.getResults();
+				tileLetters = board;
+				List<Possibility> possibilities;
+				if (useNative) {
+                    possibilities = NativeSolver.solve(
+                            this::publishProgress, scoring, nativeParams, game, board, words, layout, moves);
+                } else {
+				    possibilities = LegacySolver.solve(
+				            this::publishProgress, scoring, game, board, words, layout, moves);
+                }
+                int bestScore = Integer.MIN_VALUE;
+                Possibility best = null;
+                for (Possibility pos : possibilities) {
+                    int score = pos.getScore();
+                    if (score > bestScore) {
+                        bestScore = score;
+                        best = pos;
+                    }
+                }
+                bestPossibility = best;
 				return 0;
-			} catch (NumberFormatException | ParseException  | SQLiteException | IndexOutOfBoundsException e) {
+			} catch (NumberFormatException | ParseException | SQLiteException | IndexOutOfBoundsException e) {
 				Log.e("WordbaseHacker", "Failed to read data.", e);
 				return R.string.internal_error;
-			}
+			} catch (Exception e) {
+			    Log.e("WordbaseHacker", "Error in solver.", e);
+			    return R.string.internal_error;
+            }
 		}
 
-		@Override
+        @Override
+        protected void onPreExecute() {
+            findViewById(R.id.progress).setVisibility(View.VISIBLE);
+            findViewById(R.id.result).setVisibility(View.GONE);
+        }
+
+        @Override
 		protected void onProgressUpdate(Integer... values) {
-			dialog.setMessage(getResources().getString(values[0]));
+            ((TextView) findViewById(R.id.status)).setText(values[0]);
 		}
 
 		@Override
-		protected void onPostExecute(Integer result) {
-			dialog.dismiss();
+		protected void onPostExecute(final Integer result) {
+			findViewById(R.id.progress).setVisibility(View.GONE);
+			findViewById(R.id.result).setVisibility(View.VISIBLE);
 			if (result != 0) {
 				new AlertDialog.Builder(BoardActivity.this).setMessage(result)
-						.setNeutralButton(R.string.ok, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								finish();
-							}
-						}).show();
+						.setNeutralButton(R.string.ok, (dialog, which) -> {
+                            finish();
+                            if (result == R.string.no_board_found) {
+                                playWordWithoutInfo();
+}
+                        }).show();
 			} else {
 				updateView();
 			}
@@ -230,20 +293,15 @@ public class BoardActivity extends AppCompatActivity {
 	}
 
 	private void updateView() {
-		int max = Integer.MIN_VALUE;
-		for (Possibility pos : possibilities) {
-			int score = scoring.calculateScore(pos.getScore());
-			if (score > max) {
-				max = score;
-				best = pos;
-			}
-		}
-		if (best == null) {
-			((TextView) findViewById(R.id.status)).setText(R.string.no_moves);
-			return;
-		}
-		((ImageView) findViewById(R.id.move_picture)).setImageDrawable(new BoardDrawable(best, tileLetters, game.isFlipped()));
-		((TextView) findViewById(R.id.status)).setText(getResources().getString(R.string.best_move, best.getWord(), max));
+	    TextView result = findViewById(R.id.result);
+	    ImageView boardArea = findViewById(R.id.move_picture);
+		if (bestPossibility == null) {
+			result.setText(R.string.no_moves);
+			boardArea.setImageDrawable(null);
+		} else {
+            boardArea.setImageDrawable(new BoardDrawable(bestPossibility, tileLetters, !useNative && game.isFlipped()));
+            result.setText(getString(R.string.best_move, bestPossibility.getWord(), bestPossibility.getScore()));
+        }
 	}
 
 	private void loadScoring() {
@@ -255,9 +313,10 @@ public class BoardActivity extends AppCompatActivity {
 			int tileKill = is.readInt();
 			int progressGain = is.readInt();
 			int progressKill = is.readInt();
-			boolean winBonus = is.readBoolean();
+			int winBonus = is.readInt();
+			int loseMinus = is.readInt();
 			is.close();
-			scoring = new Scoring(letter, mine, tileGain, tileKill, progressGain, progressKill, winBonus);
+			scoring = new Scoring(letter, mine, tileGain, tileKill, progressGain, progressKill, winBonus, loseMinus);
 		} catch (FileNotFoundException e) {
 			scoring = Scoring.DEFAULT;
 			Log.i("WordbaseHacker", "No previous scoring found, defaulting");
@@ -278,101 +337,39 @@ public class BoardActivity extends AppCompatActivity {
 			os.writeInt(scoring.tileKill);
 			os.writeInt(scoring.progressGain);
 			os.writeInt(scoring.progressKill);
-			os.writeBoolean(scoring.winBonus);
+			os.writeInt(scoring.winBonus);
+			os.writeInt(scoring.loseMinus);
 			os.close();
 		} catch (IOException e) {
 			Log.e("WordbaseHacker", "Failed to save scoring", e);
 		}
 	}
 
+	private void restartSolver() {
+        loaded = true;
+        bestPossibility = null;
+        updateView();
+        LoadTask task = new LoadTask();
+        task.execute();
+    }
+
 	private void scoringDialog() {
-		currentScoring = scoring;
-		AlertDialog.Builder dialog = new AlertDialog.Builder(this);
-
-		final View layout = View.inflate(this, R.layout.scoring_dialog, null);
-		dialog.setView(layout);
-		dialog.setTitle(R.string.scoring);
-		dialog.setNegativeButton(R.string.cancel, null);
-		dialog.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int which) {
-				scoring = currentScoring;
-				saveScoring();
-				updateView();
-			}
-		});
-		final AlertDialog shown = dialog.create();
-
-		updateFields(layout);
-
-		TextWatcher watcher = new TextWatcher() {
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-				updateScoring(layout, shown);
-			}
-
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-			@Override
-			public void afterTextChanged(Editable s) {}
-		};
-		((EditText) layout.findViewById(R.id.lettersBox)).addTextChangedListener(watcher);
-		((EditText) layout.findViewById(R.id.minesBox)).addTextChangedListener(watcher);
-		((EditText) layout.findViewById(R.id.tilesPlrBox)).addTextChangedListener(watcher);
-		((EditText) layout.findViewById(R.id.tilesOppBox)).addTextChangedListener(watcher);
-		((EditText) layout.findViewById(R.id.progressPlrBox)).addTextChangedListener(watcher);
-		((EditText) layout.findViewById(R.id.progressOppBox)).addTextChangedListener(watcher);
-		((CheckBox) layout.findViewById(R.id.winBox))
-				.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-					@Override
-					public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-						updateScoring(layout, shown);
-					}
-				});
-
-		Button defaults = layout.findViewById(R.id.defaults);
-		defaults.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				changingValues = true;
-				currentScoring = Scoring.DEFAULT;
-				updateFields(layout);
-				changingValues = false;
-			}
-		});
-
-		shown.show();
+		ScoringDialog dialog = new ScoringDialog(this, scoring, useNative);
+		dialog.setNewScoringListener(newScoring -> {
+		    scoring = newScoring;
+		    saveScoring();
+		    restartSolver();
+        });
+		dialog.show();
 	}
 
-	private void updateFields(View layout) {
-		((EditText) layout.findViewById(R.id.lettersBox)).setText(Integer.toString(currentScoring.letter));
-		((EditText) layout.findViewById(R.id.minesBox)).setText(Integer.toString(currentScoring.mine));
-		((EditText) layout.findViewById(R.id.tilesPlrBox)).setText(Integer.toString(currentScoring.tileGain));
-		((EditText) layout.findViewById(R.id.tilesOppBox)).setText(Integer.toString(currentScoring.tileKill));
-		((EditText) layout.findViewById(R.id.progressPlrBox)).setText(Integer.toString(currentScoring.progressGain));
-		((EditText) layout.findViewById(R.id.progressOppBox)).setText(Integer.toString(currentScoring.progressKill));
-		((CheckBox) layout.findViewById(R.id.winBox)).setChecked(currentScoring.winBonus);
-	}
-
-	private void updateScoring(View layout, AlertDialog shown) {
-		if (changingValues)
-			return;
-		try {
-			int letter = Integer.parseInt(((EditText) layout.findViewById(R.id.lettersBox)).getText().toString());
-			int mine = Integer.parseInt(((EditText) layout.findViewById(R.id.minesBox)).getText().toString());
-			int tileGain = Integer.parseInt(((EditText) layout.findViewById(R.id.tilesPlrBox)).getText().toString());
-			int tileKill = Integer.parseInt(((EditText) layout.findViewById(R.id.tilesOppBox)).getText().toString());
-			int progressGain = Integer.parseInt(((EditText) layout.findViewById(R.id.progressPlrBox)).getText()
-					.toString());
-			int progressKill = Integer.parseInt(((EditText) layout.findViewById(R.id.progressOppBox)).getText()
-					.toString());
-			boolean winBonus = ((CheckBox) layout.findViewById(R.id.winBox)).isChecked();
-			currentScoring = new Scoring(letter, mine, tileGain, tileKill, progressGain, progressKill, winBonus);
-			shown.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(true);
-		} catch (NumberFormatException e) {
-			shown.getButton(AlertDialog.BUTTON_POSITIVE).setEnabled(false);
-		}
-	}
+	private void nativeParamsDialog() {
+        NativeParamsDialog dialog = new NativeParamsDialog(this);
+        dialog.setNewParamsListener(newParams -> {
+            nativeParams = newParams;
+            restartSolver();
+        });
+        dialog.show();
+    }
 
 }

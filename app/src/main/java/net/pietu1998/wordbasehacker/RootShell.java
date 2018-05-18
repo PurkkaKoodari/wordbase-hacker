@@ -33,14 +33,11 @@ public class RootShell implements AutoCloseable {
     public void close() throws IOException {
         sendCommand("exit");
         final Thread current = Thread.currentThread();
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ignore) {}
-                current.interrupt();
-            }
+        new Thread(() -> {
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ignore) {}
+            current.interrupt();
         }).start();
         try {
             root.waitFor();

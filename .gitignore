@@ -43,3 +43,10 @@ proguard/
 .idea/**/uiDesigner.xml
 .idea/**/gradle.xml
 .idea/**/libraries
+.idea/**/caches
+
+# Native builds
+.externalNativeBuild/
+
+# Output
+/release/

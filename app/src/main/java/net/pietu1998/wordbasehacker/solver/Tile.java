@@ -8,6 +8,12 @@ public final class Tile {
 	public static final int BASE = 8;
 	public static final int SUPER_MINE = 16;
 
-	private Tile() {}
+	public final int x, y, type;
+
+	public Tile(int x, int y, int type) {
+		this.x = x;
+		this.y = y;
+		this.type = type;
+	}
 
 }

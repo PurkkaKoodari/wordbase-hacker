@@ -9,7 +9,6 @@ public class Board {
 	private short numCharacters = 0;
 
 	private final int[] tileStates;
-	private final char[] tileLetters;
 	private final short[] tileMappedLetters;
 
 	private final TrieNode root;
@@ -30,19 +29,16 @@ public class Board {
 		}
 	}
 
-	public Board(String[] rows, int[] tileStates, String[] words, Game game) {
+	public Board(char[] chars, int[] tileStates, String[] words, Game game) {
 		this.tileStates = tileStates;
-		tileLetters = new char[130];
 		tileMappedLetters = new short[130];
 		short[] charMap = new short[65536];
-		for (int y = 0, index = 0; y < 13; y++) {
-			for (int x = 0; x < 10; x++, index++) {
-				char letter = tileLetters[index] = rows[y].charAt(x);
-				int mapping = charMap[letter];
-				if (mapping == 0)
-					mapping = charMap[letter] = ++numCharacters;
-				tileMappedLetters[index] = (short) (mapping - 1);
-			}
+		for (int index = 0; index < 130; index++) {
+			char letter = chars[index];
+			int mapping = charMap[letter];
+			if (mapping == 0)
+				mapping = charMap[letter] = ++numCharacters;
+			tileMappedLetters[index] = (short) (mapping - 1);
 		}
 		root = new TrieNode();
 		for (String word : words) {
@@ -60,10 +56,6 @@ public class Board {
 			}
 			node.content = word;
 		}
-	}
-
-	public char[] getTileLetters() {
-		return tileLetters;
 	}
 
 	public void findWords() {
@@ -100,14 +92,14 @@ public class Board {
 		positions[index] = false;
 	}
 
-	public void scoreWords(boolean flipped) {
+	public void scoreWords(Scoring scoring, boolean flipped) {
 		int[] newStates = new int[130];
 		boolean[] connected = new boolean[130];
 		for (Possibility pos : results)
-			scoreWord(pos, newStates, connected, flipped);
+			scoreWord(scoring, pos, newStates, connected, flipped);
 	}
 
-	private void scoreWord(Possibility pos, int[] newStates, boolean[] connected, boolean flipped) {
+	private void scoreWord(Scoring scoring, Possibility pos, int[] newStates, boolean[] connected, boolean flipped) {
 		int oldMines = 0, oldPlayer = 0, oldOpponent = 0, oldDistPlayer = 0, oldDistOpponent = 0;
 		for (int y = 0, index = 0; y < 13; y++) {
 			for (int x = 0; x < 10; x++, index++) {
@@ -156,10 +148,11 @@ public class Board {
 				}
 			}
 		}
-		pos.setScore(new Score(pos.getCoordinates().length / 2, oldMines - newMines,
+		Score score = new Score(pos.getCoordinates().length / 2, oldMines - newMines,
 				newPlayer - oldPlayer, oldOpponent - newOpponent,
 				newDistPlayer - oldDistPlayer, oldDistOpponent - newDistOpponent,
-				newDistPlayer == 12));
+				newDistPlayer == 12);
+		pos.setScore(scoring.calculateScore(score));
 		pos.setResult(newStates);
 	}
 

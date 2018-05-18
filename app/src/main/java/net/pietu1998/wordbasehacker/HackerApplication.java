@@ -60,7 +60,7 @@ public class HackerApplication extends Application {
     }
 
     public void showSuggestedPath(byte[] coords) {
-        if (service != null)
+        if (service != null && HudUtils.isHudEnabled(this))
             service.showSuggestedPath(coords);
     }
 

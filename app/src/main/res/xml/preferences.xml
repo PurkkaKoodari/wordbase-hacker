@@ -1,6 +1,31 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory
+        android:title="@string/pref_category_solver">
+
+        <SwitchPreference
+            android:key="@string/pref_key_native"
+            android:title="@string/pref_native"
+            android:defaultValue="true"/>
+
+        <Preference
+            android:key="@string/pref_key_native_params"
+            android:title="@string/pref_native_params"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/pref_category_appearance">
+
+        <SwitchPreference
+            android:key="@string/pref_key_darktheme"
+            android:title="@string/pref_darktheme"
+            android:summary="@string/pref_desc_darktheme"
+            android:defaultValue="false"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:title="@string/pref_category_hud">
 
         <SwitchPreference

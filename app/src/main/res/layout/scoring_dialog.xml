@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="5dp" >
+    android:padding="10dp" >
 
     <TableLayout
         android:layout_width="match_parent"
@@ -42,12 +42,13 @@
                 android:id="@+id/lettersBox"
                 android:layout_height="wrap_content"
                 android:ems="4"
-                android:inputType="number" />
+                android:inputType="numberSigned" />
 
             <Space />
         </TableRow>
 
-        <TableRow>
+        <TableRow
+            android:id="@+id/minesRow">
 
             <TextView
                 android:layout_height="wrap_content"
@@ -59,7 +60,7 @@
                 android:id="@+id/minesBox"
                 android:layout_height="wrap_content"
                 android:ems="4"
-                android:inputType="number" />
+                android:inputType="numberSigned" />
 
             <Space />
         </TableRow>
@@ -76,13 +77,13 @@
                 android:id="@+id/tilesPlrBox"
                 android:layout_height="wrap_content"
                 android:ems="4"
-                android:inputType="number" />
+                android:inputType="numberSigned" />
 
             <EditText
                 android:id="@+id/tilesOppBox"
                 android:layout_height="wrap_content"
                 android:ems="4"
-                android:inputType="number" />
+                android:inputType="numberSigned" />
         </TableRow>
 
         <TableRow>
@@ -97,23 +98,46 @@
                 android:id="@+id/progressPlrBox"
                 android:layout_height="wrap_content"
                 android:ems="4"
-                android:inputType="number" />
+                android:inputType="numberSigned" />
 
             <EditText
                 android:id="@+id/progressOppBox"
                 android:layout_height="wrap_content"
                 android:ems="4"
-                android:inputType="number" />
+                android:inputType="numberSigned" />
         </TableRow>
 
         <TableRow>
 
-            <CheckBox
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/winning"
+                android:textAppearance="@android:style/TextAppearance.Material.Widget.TextView" />
+
+            <EditText
                 android:id="@+id/winBox"
                 android:layout_height="wrap_content"
-                android:layout_span="3"
-                android:text="@string/preferwin" />
+                android:layout_span="2"
+                android:inputType="numberSigned" />
         </TableRow>
+
+        <TableRow
+            android:id="@+id/loseRow">
+
+            <TextView
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/losing"
+                android:textAppearance="@android:style/TextAppearance.Material.Widget.TextView" />
+
+            <EditText
+                android:id="@+id/loseBox"
+                android:layout_height="wrap_content"
+                android:layout_span="2"
+                android:inputType="numberSigned" />
+        </TableRow>
+
     </TableLayout>
 
     <Button

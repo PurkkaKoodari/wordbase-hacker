@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical"
+              android:padding="10dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:text="@string/pref_max_depth"
+            android:textAppearance="@android:style/TextAppearance.Material.Subhead"/>
+
+        <TextView
+            android:id="@+id/max_depth_show"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:text=""
+            android:textAppearance="@android:style/TextAppearance.Material.Subhead"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:text="@string/pref_desc_max_depth"
+        android:textAppearance="@android:style/TextAppearance.Material.Widget.TextView"/>
+
+    <SeekBar
+        android:id="@+id/max_depth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="20"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:text="@string/pref_max_breadth"
+            android:textAppearance="@android:style/TextAppearance.Material.Subhead"/>
+
+        <TextView
+            android:id="@+id/max_breadth_show"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:text=""
+            android:textAppearance="@android:style/TextAppearance.Material.Subhead"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:text="@string/pref_desc_max_breadth"
+        android:textAppearance="@android:style/TextAppearance.Material.Widget.TextView"/>
+
+    <SeekBar
+        android:id="@+id/max_breadth"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="19"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:text="@string/pref_max_steps"
+            android:textAppearance="@android:style/TextAppearance.Material.Subhead"/>
+
+        <TextView
+            android:id="@+id/max_steps_show"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:text=""
+            android:textAppearance="@android:style/TextAppearance.Material.Subhead"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:text="@string/pref_desc_max_steps"
+        android:textAppearance="@android:style/TextAppearance.Material.Widget.TextView"/>
+
+    <SeekBar
+        android:id="@+id/max_steps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="99"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="5dp"
+            android:text="@string/pref_speedup_factor"
+            android:textAppearance="@android:style/TextAppearance.Material.Subhead"/>
+
+        <TextView
+            android:id="@+id/speedup_factor_show"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:text=""
+            android:textAppearance="@android:style/TextAppearance.Material.Subhead"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:text="@string/pref_desc_speedup_factor"
+        android:textAppearance="@android:style/TextAppearance.Material.Widget.TextView"/>
+
+    <SeekBar
+        android:id="@+id/speedup_factor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="128"/>
+
+    <Button
+        android:id="@+id/defaults"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="@string/defaults" />
+
+</LinearLayout>
