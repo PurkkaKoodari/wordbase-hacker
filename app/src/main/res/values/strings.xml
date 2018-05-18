@@ -84,7 +84,7 @@
     <string name="pref_desc_darktheme">May require a restart.</string>
     <string name="pref_hud">Enable HUD</string>
     <string name="pref_desc_hud">Enables a HUD that displays the recommended word on top of the Wordbase app.</string>
-    <string name="pref_hudedit">HUD position &amp;amp; size</string>
+    <string name="pref_hudedit">HUD position &#38; size</string>
     <string name="pref_desc_hudedit">Tap to change HUD position and size.</string>
     <string name="pref_version">Version</string>
     <string name="pref_license">License</string>
